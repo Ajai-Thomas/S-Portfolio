@@ -11,7 +11,7 @@ const Navbar = () => {
 
   return (
     <nav className="flex flex-wrap justify-between items-center gap-y-4 gap-x-8 py-8 text-xs font-medium tracking-widest uppercase border-b border-black/10">
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <NavLink to="/" className="hover:text-tan transition-colors">
           Agnieszka Trefler
         </NavLink>
