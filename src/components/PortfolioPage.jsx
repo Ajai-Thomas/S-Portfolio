@@ -4,11 +4,17 @@ import Hero from './Hero';
 import ProjectSection from './ProjectSection';
 import { projects } from '../data/projects';
 
-const portfolioVariants = { /* ... as before ... */ };
-const projectVariants = { /* ... as before ... */ };
+const portfolioVariants = {
+  visible: { transition: { staggerChildren: 0.3 } },
+};
+
+const projectVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+};
 
 const PortfolioPage = () => (
-  <>
+  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
     <Hero />
     <motion.section
       id="portfolio"
@@ -26,6 +32,7 @@ const PortfolioPage = () => (
         />
       ))}
     </motion.section>
-  </>
+  </motion.div>
 );
+
 export default PortfolioPage;
