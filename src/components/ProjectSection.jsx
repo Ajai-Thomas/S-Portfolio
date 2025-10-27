@@ -1,11 +1,14 @@
 // src/components/ProjectSection.jsx
-const ProjectSection = ({ project, projectNumber }) => {
+import { motion } from 'framer-motion'; // Import motion
+
+const ProjectSection = ({ project, projectNumber, variants }) => {
   return (
-    <div className="py-16">
+    // CHANGE: The main container is now a motion.div that accepts variants
+    <motion.div className="py-16 group" variants={variants}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <img src={project.images[0]} alt={`${project.title} 1`} className="h-96 w-full object-cover" />
-        <img src={project.images[1]} alt={`${project.title} 2`} className="h-96 w-full object-cover" />
-        <img src={project.images[2]} alt={`${project.title} 3`} className="h-96 w-full object-cover" />
+        <img src={project.images[0]} alt={`${project.title} 1`} className="h-96 w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+        <img src={project.images[1]} alt={`${project.title} 2`} className="h-96 w-full object-cover transition-transform duration-300 delay-75 group-hover:scale-105" />
+        <img src={project.images[2]} alt={`${project.title} 3`} className="h-96 w-full object-cover transition-transform duration-300 delay-150 group-hover:scale-105" />
       </div>
       <div className="flex justify-between items-center">
         <div>
@@ -17,7 +20,7 @@ const ProjectSection = ({ project, projectNumber }) => {
           <p className="text-xs tracking-widest">{project.category}</p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

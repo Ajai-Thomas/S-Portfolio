@@ -2,12 +2,12 @@
 import { useState } from 'react';
 
 const ContactForm = () => {
-  // Your existing form logic can go here
   const [status, setStatus] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setStatus('Sending...');
+    // Simulate a network request
     setTimeout(() => {
       setStatus('Message sent successfully!');
       e.target.reset();
