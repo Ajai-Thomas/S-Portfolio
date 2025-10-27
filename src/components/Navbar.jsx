@@ -1,18 +1,23 @@
 // src/components/Navbar.jsx
-import { Link } from 'react-scroll';
+import { NavLink } from 'react-router-dom';
 
 const Navbar = () => {
+  const activeStyle = {
+    color: '#DEC19B', // Your 'tan' color
+  };
+
   return (
     <nav className="flex flex-wrap justify-between items-center gap-4 py-8 text-xs font-medium tracking-widest uppercase border-b border-black/10">
-      <div>Agnieszka Trefler</div>
+      <div>
+        <NavLink to="/" className="hover:opacity-70 transition-opacity">Agnieszka Trefler</NavLink>
+      </div>
       <div className="flex gap-8">
-        <Link to="about" smooth={true} duration={500} offset={-50} className="cursor-pointer hover:opacity-70 transition-opacity">About</Link>
-        <Link to="portfolio" smooth={true} duration={500} className="cursor-pointer hover:opacity-70 transition-opacity">Portfolio</Link>
+        <NavLink to="/about" style={({ isActive }) => (isActive ? activeStyle : undefined)} className="hover:opacity-70 transition-opacity">About</NavLink>
+        <NavLink to="/" style={({ isActive }) => (isActive ? activeStyle : undefined)} className="hover:opacity-70 transition-opacity" end>Portfolio</NavLink>
         <a href="#" className="hover:opacity-70 transition-opacity">Blog</a>
       </div>
-      {/* The extra text has been removed from this section */}
       <div className="flex gap-8">
-        <Link to="contact" smooth={true} duration={500} className="cursor-pointer hover:opacity-70 transition-opacity">Contact</Link>
+        <NavLink to="/contact" style={({ isActive }) => (isActive ? activeStyle : undefined)} className="hover:opacity-70 transition-opacity">Contact</NavLink>
       </div>
     </nav>
   );
