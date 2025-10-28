@@ -14,7 +14,8 @@ const Navbar = () => {
       <div className="flex gap-8">
         <NavLink to="/about" style={({ isActive }) => (isActive ? activeStyle : undefined)} className="hover:opacity-70 transition-opacity">About</NavLink>
         <NavLink to="/" style={({ isActive }) => (isActive ? activeStyle : undefined)} className="hover:opacity-70 transition-opacity" end>Portfolio</NavLink>
-        <a href="#" className="hover:opacity-70 transition-opacity">Blog</a>
+        {/* CHANGE: Updated this link */}
+        <NavLink to="/blog" style={({ isActive }) => (isActive ? activeStyle : undefined)} className="hover:opacity-70 transition-opacity">Blog</NavLink>
       </div>
       <div className="flex gap-8">
         <NavLink to="/contact" style={({ isActive }) => (isActive ? activeStyle : undefined)} className="hover:opacity-70 transition-opacity">Contact</NavLink>

@@ -8,9 +8,9 @@ export const projects = [
     category: "PRODUCT PHOTOGRAPHY",
     images: [
       // --- NEW, WORKING IMAGE LINKS ---
-      "https://images.unsplash.com/photo-1598432417263-95b951833a69?w=800&q=80",
-      "https://images.unsplash.com/photo-1579691978213-41584b455017?w=800&q=80",
-      "https://images.unsplash.com/photo-1611735341935-35594b304381?w=800&q=80",
+      "https://images.unsplash.com/photo-1760709071560-0f2b1daaf5cb?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687",
+      "https://images.unsplash.com/photo-1761072195994-82158b4fc27d?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687",
+      "https://images.unsplash.com/photo-1761216674297-6ffa4d89400c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687",
     ],
   },
   {
@@ -31,7 +31,7 @@ export const projects = [
     category: "ARCHITECTURE",
     images: [
       "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&q=80",
-      "https://images.unsplash.com/photo-1491458909035-77117865b2a2?w=800&q=80",
+      "https://images.unsplash.com/photo-1760868718218-ff73db4518fd?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687",
       "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&q=80",
     ],
   },
@@ -43,7 +43,7 @@ export const projects = [
     images: [
         "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80",
         "https://images.unsplash.com/photo-1521119989659-a83eee488004?w=800&q=80",
-        "https://images.unsplash.com/photo-1517423568346-d5a599a89d83?w=800&q=80",
+        "https://plus.unsplash.com/premium_photo-1760441770990-04d7cf3e9f6d?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=678",
     ],
   },
   {
