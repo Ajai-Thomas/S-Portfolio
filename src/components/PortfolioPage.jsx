@@ -5,7 +5,13 @@ import ProjectSection from './ProjectSection';
 import { projects } from '../data/projects';
 
 const portfolioVariants = {
-  visible: { transition: { staggerChildren: 0.3 } },
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.3,
+    },
+  },
 };
 
 const projectVariants = {

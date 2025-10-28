@@ -1,24 +1,39 @@
 // src/components/Navbar.jsx
 import { NavLink } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
-const Navbar = () => {
+const NavItem = ({ to, children, end = false }) => {
   const activeStyle = {
     color: '#DEC19B', // Your 'tan' color
   };
 
   return (
+    <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}>
+      <NavLink
+        to={to}
+        style={({ isActive }) => (isActive ? activeStyle : undefined)}
+        className="hover:opacity-70 transition-opacity"
+        end={end}
+      >
+        {children}
+      </NavLink>
+    </motion.div>
+  );
+};
+
+const Navbar = () => {
+  return (
     <nav className="flex flex-wrap justify-between items-center gap-4 py-8 text-xs font-medium tracking-widest uppercase border-b border-black/10">
-      <div>
-        <NavLink to="/" className="hover:opacity-70 transition-opacity">Agnieszka Trefler</NavLink>
-      </div>
+      <NavItem to="/">Agnieszka Trefler</NavItem>
+      
       <div className="flex gap-8">
-        <NavLink to="/about" style={({ isActive }) => (isActive ? activeStyle : undefined)} className="hover:opacity-70 transition-opacity">About</NavLink>
-        <NavLink to="/" style={({ isActive }) => (isActive ? activeStyle : undefined)} className="hover:opacity-70 transition-opacity" end>Portfolio</NavLink>
-        {/* CHANGE: Updated this link */}
-        <NavLink to="/blog" style={({ isActive }) => (isActive ? activeStyle : undefined)} className="hover:opacity-70 transition-opacity">Blog</NavLink>
+        <NavItem to="/about">About</NavItem>
+        <NavItem to="/" end={true}>Portfolio</NavItem>
+        <NavItem to="/blog">Blog</NavItem>
       </div>
+      
       <div className="flex gap-8">
-        <NavLink to="/contact" style={({ isActive }) => (isActive ? activeStyle : undefined)} className="hover:opacity-70 transition-opacity">Contact</NavLink>
+        <NavItem to="/contact">Contact</NavItem>
       </div>
     </nav>
   );

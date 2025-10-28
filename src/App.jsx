@@ -3,14 +3,15 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import PageTransition from './components/PageTransition'; // <-- Import the new component
 
 // Import all the page components
 import PortfolioPage from './components/PortfolioPage';
 import AboutPage from './components/AboutPage';
 import ContactPage from './components/ContactPage';
 import ProjectDetailPage from './components/ProjectDetailPage';
-import BlogPage from './components/BlogPage';           // <-- Import BlogPage
-import BlogPostPage from './components/BlogPostPage';   // <-- Import BlogPostPage
+import BlogPage from './components/BlogPage';
+import BlogPostPage from './components/BlogPostPage';
 
 function App() {
   const location = useLocation();
@@ -22,13 +23,13 @@ function App() {
         <main>
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
-              <Route path="/" element={<PortfolioPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/project/:projectId" element={<ProjectDetailPage />} />
-              {/* --- ADDED: NEW BLOG ROUTES --- */}
-              <Route path="/blog" element={<BlogPage />} />
-              <Route path="/blog/:postId" element={<BlogPostPage />} />
+              {/* Wrap each route's element in PageTransition */}
+              <Route path="/" element={<PageTransition><PortfolioPage /></PageTransition>} />
+              <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
+              <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+              <Route path="/project/:projectId" element={<PageTransition><ProjectDetailPage /></PageTransition>} />
+              <Route path="/blog" element={<PageTransition><BlogPage /></PageTransition>} />
+              <Route path="/blog/:postId" element={<PageTransition><BlogPostPage /></PageTransition>} />
             </Routes>
           </AnimatePresence>
         </main>

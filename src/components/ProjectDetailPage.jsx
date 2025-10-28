@@ -1,12 +1,14 @@
 // src/components/ProjectDetailPage.jsx
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { projects } from '../data/projects';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ProjectDetailPage = () => {
   const { projectId } = useParams();
-  const project = projects.find((p) => p.id === parseInt(projectId));
+  const navigate = useNavigate();
+  const projectIndex = projects.findIndex((p) => p.id === parseInt(projectId));
+  const project = projects[projectIndex];
 
   const [selectedImage, setSelectedImage] = useState('');
 
@@ -19,6 +21,21 @@ const ProjectDetailPage = () => {
   if (!project) {
     return <div className="py-24 text-center">Project not found.</div>;
   }
+
+  const goToNextProject = () => {
+    const nextProject = projects[projectIndex + 1];
+    if (nextProject) {
+      navigate(`/project/${nextProject.id}`);
+    }
+  };
+
+  const goToPreviousProject = () => {
+    const previousProject = projects[projectIndex - 1];
+    if (previousProject) {
+      navigate(`/project/${previousProject.id}`);
+    }
+  };
+
 
   return (
     <motion.div
@@ -37,7 +54,6 @@ const ProjectDetailPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         
         {/* Main Image Viewer */}
-        {/* CHANGE: Added bg-black for a clean letterbox effect */}
         <div className="md:col-span-3 h-[80vh] relative rounded-lg overflow-hidden bg-black">
           <AnimatePresence mode="wait">
             <motion.img
@@ -48,7 +64,6 @@ const ProjectDetailPage = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              // CHANGE: Replaced object-cover with object-contain
               className="absolute top-0 left-0 w-full h-full object-contain"
             />
           </AnimatePresence>
@@ -74,10 +89,26 @@ const ProjectDetailPage = () => {
         </div>
       </div>
       
-      <div className="text-center mt-16">
+      <div className="flex justify-between items-center mt-16">
+        <div>
+          {projects[projectIndex - 1] && (
+             <button onClick={goToPreviousProject} className="text-sm font-bold uppercase tracking-widest hover:text-tan transition-colors">
+               &larr; Previous Project
+             </button>
+          )}
+        </div>
+
         <Link to="/" className="text-sm font-bold uppercase tracking-widest hover:text-tan transition-colors">
-          &larr; Back to Portfolio
+          Back to Portfolio
         </Link>
+
+        <div>
+          {projects[projectIndex + 1] && (
+            <button onClick={goToNextProject} className="text-sm font-bold uppercase tracking-widest hover:text-tan transition-colors">
+              Next Project &rarr;
+            </button>
+          )}
+        </div>
       </div>
     </motion.div>
   );
