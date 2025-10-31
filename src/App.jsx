@@ -3,7 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import PageTransition from './components/PageTransition'; // <-- Import the new component
+import PageTransition from './components/PageTransition';
 
 // Import all the page components
 import PortfolioPage from './components/PortfolioPage';
@@ -17,13 +17,13 @@ function App() {
   const location = useLocation();
 
   return (
+    // REVERTED: The background is back to your original 'bg-tan'
     <div className="bg-tan min-h-screen p-4 md:p-8 font-sans text-black">
       <div className="bg-ivory max-w-7xl mx-auto px-6 md:px-16">
         <Navbar />
         <main>
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
-              {/* Wrap each route's element in PageTransition */}
               <Route path="/" element={<PageTransition><PortfolioPage /></PageTransition>} />
               <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
               <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
