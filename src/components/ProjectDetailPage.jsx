@@ -1,8 +1,42 @@
 // src/components/ProjectDetailPage.jsx
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react'; 
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { projects } from '../data/projects';
+import { client } from '../sanity'; 
 import { motion, useScroll, useTransform } from 'framer-motion';
+
+// -------------------------------------------------------------------
+// Helper component to convert YouTube URL to Embed URL
+// -------------------------------------------------------------------
+const extractYouTubeEmbed = (url) => {
+    if (!url) return '';
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    const videoId = (match && match[2].length === 11) ? match[2] : null;
+
+    if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}?rel=0&showinfo=0&autoplay=0`;
+    }
+    return url; // Fallback to original URL if not recognized
+};
+
+// Component to render an embedded video
+const VideoEmbed = ({ src, title }) => {
+    const embedSrc = extractYouTubeEmbed(src);
+
+    return (
+        <div className="relative pt-[56.25%] overflow-hidden rounded-lg shadow-lg">
+            <iframe
+                className="absolute top-0 left-0 w-full h-full"
+                src={embedSrc}
+                title={title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+            ></iframe>
+        </div>
+    );
+};
+// -------------------------------------------------------------------
 
 const ParallaxImage = ({ src, alt }) => {
     const ref = useRef(null);
@@ -25,25 +59,62 @@ const ParallaxImage = ({ src, alt }) => {
     );
 };
 
+// -------------------------------------------------------------------
+// ProjectDetailPage: Main Component
+// -------------------------------------------------------------------
+
 const ProjectDetailPage = () => {
     const { projectId } = useParams();
     const navigate = useNavigate();
-    const projectIndex = projects.findIndex((p) => p.id === parseInt(projectId));
-    const project = projects[projectIndex];
+    const [project, setProject] = useState(null);
+    const [projectsList, setProjectsList] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // Fetch the list of all project IDs (for navigation)
+        const listQuery = `*[_type == "project"] | order(date desc) {
+            _id,
+        }`;
+        
+        // Fetch the current project details, including all media items
+        const detailQuery = `*[_type == "project" && _id == $projectId][0] {
+            _id,
+            title,
+            category,
+            date,
+            excerpt,
+            mediaItems, // Fetch the new array of objects
+        }`;
+
+        Promise.all([
+            client.fetch(listQuery),
+            client.fetch(detailQuery, { projectId })
+        ]).then(([listData, detailData]) => {
+            setProjectsList(listData);
+            setProject(detailData);
+            setLoading(false);
+        }).catch(console.error);
+    }, [projectId]);
+
+    const currentProjectIndex = projectsList.findIndex(p => p._id === projectId);
+    const previousProject = projectsList[currentProjectIndex - 1];
+    const nextProject = projectsList[currentProjectIndex + 1];
+
+    const goToNextProject = () => {
+        if (nextProject) navigate(`/project/${nextProject._id}`);
+    };
+
+    const goToPreviousProject = () => {
+        if (previousProject) navigate(`/project/${previousProject._id}`);
+    };
+
+    if (loading) {
+        return <div className="py-24 text-center">Loading Project...</div>;
+    }
 
     if (!project) {
         return <div className="py-24 text-center">Project not found.</div>;
     }
-
-    const goToNextProject = () => {
-        const nextProject = projects[projectIndex + 1];
-        if (nextProject) navigate(`/project/${nextProject.id}`);
-    };
-
-    const goToPreviousProject = () => {
-        const previousProject = projects[projectIndex - 1];
-        if (previousProject) navigate(`/project/${previousProject.id}`);
-    };
 
     return (
         <motion.div
@@ -54,31 +125,30 @@ const ProjectDetailPage = () => {
         >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12">
                 
-                {/* --- Left Column (Sticky & Cleaned Up) --- */}
+                {/* --- Left Column --- */}
                 <div className="md:sticky md:top-24 h-fit">
-                    {/* Reordered for better hierarchy */}
                     <p className="text-sm tracking-widest text-black/60 mb-2">
                         {project.category} ・ {project.date}
                     </p>
                     <h1 className="text-5xl lg:text-6xl font-black tracking-tighter mb-6">{project.title}</h1>
                     
                     <p className="text-black/70 max-w-md mb-16">
-                        A brief showcase of the '{project.title}' project, highlighting the key visual elements and the story behind the shots. Each image is carefully selected to represent the collection's core theme.
+                        {project.excerpt}
                     </p>
 
-                    {/* Neatly grouped navigation links */}
+                    {/* Navigation links */}
                     <div className="flex flex-col items-start space-y-4 text-sm font-bold uppercase tracking-widest">
                         <Link to="/" className="hover:text-tan transition-colors">
                             Back to Portfolio
                         </Link>
                         
                         <div className="flex gap-8 pt-2">
-                             {projects[projectIndex - 1] && (
+                             {previousProject && (
                                 <button onClick={goToPreviousProject} className="hover:text-tan transition-colors">
                                     &larr; Previous
                                 </button>
                             )}
-                            {projects[projectIndex + 1] && (
+                            {nextProject && (
                                 <button onClick={goToNextProject} className="hover:text-tan transition-colors">
                                     Next &rarr;
                                 </button>
@@ -87,14 +157,20 @@ const ProjectDetailPage = () => {
                     </div>
                 </div>
 
-                {/* --- Right Column (Scrollable Image Gallery) --- */}
+                {/* --- Right Column (Scrollable Image/Video Gallery) --- */}
                 <div className="space-y-8">
-                    {project.images.map((image, index) => (
-                        <ParallaxImage
-                            key={index}
-                            src={image}
-                            alt={`${project.title} shot ${index + 1}`}
-                        />
+                    {project.mediaItems.map((item, index) => (
+                        <div key={index}>
+                            {/* Renders VideoEmbed for YouTube, or ParallaxImage for all others */}
+                            {item.type === 'youtube' ? (
+                                <VideoEmbed src={item.url} title={item.alt || project.title} />
+                            ) : (
+                                <ParallaxImage
+                                    src={item.url}
+                                    alt={item.alt || `${project.title} shot ${index + 1}`}
+                                />
+                            )}
+                        </div>
                     ))}
                 </div>
             </div>
