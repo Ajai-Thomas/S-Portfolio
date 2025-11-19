@@ -1,74 +1,53 @@
-// studio/schemas/project.js
-import { defineField, defineType } from 'sanity';
-
-export default defineType({
-  name: 'project',
-  title: 'Project',
-  type: 'document',
-  fields: [
-    defineField({
-      name: 'title',
-      title: 'Title',
-      type: 'string',
-    }),
-    defineField({
-      name: 'category',
-      title: 'Category',
-      type: 'string',
-    }),
-    defineField({
-      name: 'date',
-      title: 'Date',
-      type: 'date',
-      options: {
-        dateFormat: 'DD/MM/YYYY',
+// schemas/project.js
+export default {
+    name: 'project',
+    title: 'Project',
+    type: 'document',
+    fields: [
+      {
+        name: 'title',
+        title: 'Title',
+        type: 'string',
       },
-    }),
-    // UPDATED: This field now supports external URLs and media type selection
-    defineField({
-      name: 'mediaItems', // Renamed for clarity: one list for all media types
-      title: 'Project Media (Images/Videos)',
-      type: 'array',
-      of: [
-        {
-          type: 'object', // Use an object to hold the media type and URL
-          title: 'Media Item',
-          fields: [
-            defineField({
-              name: 'url',
-              title: 'URL Link (Unsplash/YouTube)',
-              type: 'url',
-              validation: Rule => Rule.uri({
-                scheme: ['http', 'https']
-              })
-            }),
-            defineField({
-              name: 'type',
-              title: 'Media Type',
-              type: 'string',
-              options: {
-                list: [
-                  { title: 'Image (Unsplash/Static Link)', value: 'image' },
-                  { title: 'Video (YouTube Link)', value: 'youtube' },
-                ],
-                layout: 'radio',
-              },
-              initialValue: 'image',
-            }),
-            defineField({
-              name: 'alt',
-              title: 'Alt Text (for Images)',
-              type: 'string',
-            }),
-          ],
+      {
+        name: 'category',
+        title: 'Category',
+        type: 'string',
+      },
+      {
+        name: 'date',
+        title: 'Date',
+        type: 'date', // Use 'date' type for better content management
+        options: {
+          dateFormat: 'DD/MM/YYYY',
         },
-      ],
-    }),
-    defineField({
-      name: 'excerpt',
-      title: 'Excerpt / Brief Showcase Text',
-      type: 'text',
-      rows: 3,
-    }),
-  ],
-});
+      },
+      {
+        // This is the array for your images/videos
+        name: 'images',
+        title: 'Images / Videos',
+        type: 'array',
+        of: [
+          {
+            type: 'image',
+            options: { hotspot: true }, // Enables image cropping/hotspot
+            fields: [
+              {
+                name: 'alt',
+                type: 'string',
+                title: 'Alternative text',
+              },
+            ],
+          },
+          // You can add a file type if you want to upload videos directly
+          // { type: 'file', title: 'Video File' }
+        ],
+      },
+      {
+        name: 'excerpt', // Field for the short description on the detail page
+        title: 'Excerpt / Brief Showcase Text',
+        type: 'text',
+        rows: 3,
+      },
+    ],
+  };
