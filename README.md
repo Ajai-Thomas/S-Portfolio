@@ -1,75 +1,87 @@
-# 📸 Visual Storytelling Portfolio
+📸 Visual Storytelling Portfolio
 
-This project is a dynamic, high-performance photography and videography portfolio built with React, Vite, and Tailwind CSS. It is designed to be fully scalable by utilizing a Headless CMS (Sanity.io) for content and supporting direct links to external media services (Unsplash, YouTube).
+A dynamic, high-performance photography and videography portfolio built with React, Vite, and Tailwind CSS, powered by a Headless CMS (Sanity.io) for real-time content management.
+Includes seamless navigation, advanced animations, and an immersive 3D Dome Gallery.
 
-The portfolio features smooth transitions, parallax scrolling showcase, and a unique scrolling portfolio section powered by Framer Motion.
+🚀 Key Features
 
-## 🚀 Key Features
+Headless CMS Integration
+All projects and blog posts managed via Sanity.io
+Project ID: 84ksnydx
 
-- **Headless CMS Integration**: All portfolio projects and blog posts are managed via Sanity.io (Project ID: 84ksnydx).
-- **Dynamic Media Handling**: Supports embedding of Unsplash image links and YouTube video links via a custom content schema.
-- **Performance**: Media is served directly from the source (Unsplash/YouTube), ensuring fast loading times.
-- **Aesthetic Design**: Uses a custom color palette (Tan, Beige, Ivory) and the Inter font, defined in `tailwind.config.js`.
-- **Animations**: Smooth page transitions, hero title animation, and complex sticky scroll interactions using Framer Motion.
+Zero-Lag Navigation
+Gallery data is prefetched inside App.jsx for instant transitions.
 
-## 🔧 Project Setup
+Interactive 3D Dome Gallery
+A custom CSS-powered 3D sphere with inertia dragging and touch controls.
+Built using CSS 3D transforms + @use-gesture/react.
 
-### Prerequisites
+Dynamic Media Handling
+Supports:
 
-- Node.js (LTS version)
-- Sanity CLI (`npm install -g @sanity/cli`)
+Unsplash images
 
-### 1. Frontend (React) Setup
+Google Drive direct links
 
-```bash
+YouTube videos
+
+Aesthetic UI
+Custom palette (Tan, Beige, Ivory) + Inter font via tailwind.config.js.
+
+Smooth Animations
+Framer Motion scroll interactions, page transitions, media animations.
+
+🔧 Project Setup
+✅ Prerequisites
+
+Node.js (LTS)
+
+Sanity CLI
+
+npm install -g @sanity/cli
+
+1. Frontend (React) Setup
 # Install dependencies
 npm install
 
-# Start the development server
+# Start development server
 npm run dev
-```
 
-The frontend will attempt to connect to the Sanity API defined in `src/sanity.js`.
 
-### 2. Backend (Sanity Studio) Setup
+Your frontend reads data from Sanity via the configuration in src/sanity.js.
 
-The Studio is located in the `studio` directory.
+2. Backend (Sanity Studio) Setup
 
-```bash
-# Navigate to the Studio folder
+The Studio lives inside the /studio directory.
+
 cd studio
-
-# Install dependencies for the Studio (if not already done via sanity init)
 npm install
-
-# Start the Sanity Studio in development mode
 sanity dev
-```
 
-The Studio runs on `http://localhost:3333` and must be running when editing content.
 
-## ⚠️ CORS Configuration
+Runs on: http://localhost:3333
 
-To allow your local frontend (`http://localhost:5173`) to fetch data, you must add the following origins to your Sanity project's CORS settings in the Sanity Manage dashboard:
+⚠️ Required CORS Settings in Sanity
 
-- `http://localhost:5173`
-- `http://127.0.0.1:5173`
+Add these origins under Sanity Manage → API → CORS Origins:
 
-## 📖 Content Structure (Sanity Schemas)
+http://localhost:5173
 
-The content models are defined in `studio/schemaTypes`.
+http://127.0.0.1:5173
 
-| Schema | Purpose | Key Dynamic Fields |
-|--------|---------|-------------------|
-| `project` | Portfolio items and media | `images`: Array of image objects with alt text. Supports hotspot for responsive images. |
-| `blogPost` | Diary entries | `content`: Uses Sanity's Portable Text (rich text) for structured articles. |
+📖 Content Structure (Sanity Schemas)
 
-## 📦 Component Overview
+Schemas are located in: studio/schemaTypes
 
-| Component | Functionality | Data Source |
-|-----------|--------------|-------------|
-| `PortfolioPage.jsx` | Renders the Hero and the main Sticky Scroll Showcase. | Fetches all projects (`*[_type == "project"]`). |
-| `ProjectDetailPage.jsx` | Displays individual project galleries. Handles navigation and renders media items conditionally (Image or YouTube embed). | Fetches project details and `images` array. |
-| `BlogPage.jsx` | Lists all blog posts dynamically. | Fetches all `blogPost` documents. |
-| `BlogPostPage.jsx` | Renders rich text content using the `@portabletext/react` library. | Fetches single `blogPost` document. |
-| `ParallaxShowcase.jsx` | Hidden section (for now) that uses Framer Motion for a sticky, multi-layered visual effect. | Should be updated to fetch featured projects from Sanity (currently needs implementation). |
+Schema	Purpose	Key Fields
+project	Stores portfolio projects & media	mediaItems – images, Google Drive URLs, YouTube embeds, Unsplash links
+blogPost	Blog/diary entries	content – Portable Text rich text
+📦 Component Overview
+Component	Purpose
+App.jsx	App routing + prefetches gallery data to eliminate load times
+PortfolioPage.jsx	Hero section + Sticky Scroll Showcase
+GalleryPage.jsx	Displays full archive with preloaded or fetched images
+DomeGallery.jsx	Core 3D dome component (gesture logic, inertia, CSS 3D)
+ProjectDetailPage.jsx	Individual project view with conditional media rendering
+BlogPage.jsx	Fetches and displays blog post list
+BlogPostPage.jsx	Renders rich text using @portabletext/react
