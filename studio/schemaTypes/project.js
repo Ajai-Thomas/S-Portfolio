@@ -1,53 +1,88 @@
-// schemas/project.js
+// studio/schemaTypes/project.js
 export default {
-    name: 'project',
-    title: 'Project',
-    type: 'document',
-    fields: [
-      {
-        name: 'title',
-        title: 'Title',
-        type: 'string',
+  name: 'project',
+  title: 'Project',
+  type: 'document',
+  fields: [
+    {
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+    },
+    {
+      name: 'category',
+      title: 'Category',
+      type: 'string',
+    },
+    {
+      name: 'date',
+      title: 'Date',
+      type: 'date',
+      options: {
+        dateFormat: 'DD/MM/YYYY',
       },
-      {
-        name: 'category',
-        title: 'Category',
-        type: 'string',
-      },
-      {
-        name: 'date',
-        title: 'Date',
-        type: 'date', // Use 'date' type for better content management
-        options: {
-          dateFormat: 'DD/MM/YYYY',
+    },
+    {
+      // Renamed to 'mediaItems' to support both images and links
+      name: 'mediaItems', 
+      title: 'Gallery (Images, Videos, External Links)',
+      type: 'array',
+      of: [
+        // 1. Standard Sanity Image Upload
+        {
+          type: 'image',
+          options: { hotspot: true },
+          fields: [
+            {
+              name: 'alt',
+              type: 'string',
+              title: 'Alternative text',
+            },
+          ],
         },
-      },
-      {
-        // This is the array for your images/videos
-        name: 'images',
-        title: 'Images / Videos',
-        type: 'array',
-        of: [
-          {
-            type: 'image',
-            options: { hotspot: true }, // Enables image cropping/hotspot
-            fields: [
-              {
-                name: 'alt',
-                type: 'string',
-                title: 'Alternative text',
+        // 2. External Link (Google Drive, Unsplash, YouTube)
+        {
+          type: 'object',
+          name: 'externalMedia',
+          title: 'External Media (URL)',
+          icon: () => 'Lx',
+          fields: [
+            {
+              name: 'url',
+              type: 'url',
+              title: 'URL',
+              description: 'Paste your Google Drive share link, Unsplash link, or YouTube URL here.'
+            },
+            {
+              name: 'type',
+              type: 'string',
+              title: 'Media Type',
+              options: {
+                list: [
+                  { title: 'Image (Drive/Unsplash)', value: 'image' },
+                  { title: 'YouTube Video', value: 'youtube' }
+                ],
+                layout: 'radio'
               },
-            ],
-          },
-          // You can add a file type if you want to upload videos directly
-          // { type: 'file', title: 'Video File' }
-        ],
-      },
-      {
-        name: 'excerpt', // Field for the short description on the detail page
-        title: 'Excerpt / Brief Showcase Text',
-        type: 'text',
-        rows: 3,
-      },
-    ],
-  };
+              initialValue: 'image'
+            },
+            {
+              name: 'alt',
+              type: 'string',
+              title: 'Alternative Text'
+            }
+          ],
+          preview: {
+            select: { title: 'alt', subtitle: 'url' }
+          }
+        }
+      ],
+    },
+    {
+      name: 'excerpt',
+      title: 'Excerpt / Brief Showcase Text',
+      type: 'text',
+      rows: 3,
+    },
+  ],
+};
