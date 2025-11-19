@@ -13,11 +13,22 @@ const getDirectLink = (url) => {
   return url;
 };
 
-const GalleryPage = () => {
-    const [allImages, setAllImages] = useState([]);
-    const [loading, setLoading] = useState(true);
+// Accept preloadedImages prop to avoid re-fetching
+const GalleryPage = ({ preloadedImages = [] }) => {
+    // Initialize state with preloaded images if available
+    const [allImages, setAllImages] = useState(preloadedImages);
+    // Only show loading if we don't have images yet
+    const [loading, setLoading] = useState(!preloadedImages || preloadedImages.length === 0);
 
     useEffect(() => {
+        // If we already have images passed from App.jsx, use them and stop loading
+        if (preloadedImages && preloadedImages.length > 0) {
+            setAllImages(preloadedImages);
+            setLoading(false);
+            return;
+        }
+
+        // Fallback: Fetch data if user goes directly to /gallery (refresh)
         const query = `*[_type == "project"] {
             "allMedia": mediaItems[]{
                 "url": coalesce(url, asset->url)
@@ -35,7 +46,7 @@ const GalleryPage = () => {
                 setLoading(false);
             })
             .catch(console.error);
-    }, []);
+    }, [preloadedImages]);
 
     if (loading) {
         return <div className="w-full h-screen bg-black text-white flex items-center justify-center">Loading Gallery...</div>;
@@ -48,8 +59,6 @@ const GalleryPage = () => {
             exit={{ opacity: 0 }}
             className="w-full h-screen bg-black overflow-hidden relative z-0"
         >
-            {/* REMOVED: Title Overlay ("Archives") section as requested */}
-
             <div className="w-full h-full">
                 <DomeGallery images={allImages} />
             </div>

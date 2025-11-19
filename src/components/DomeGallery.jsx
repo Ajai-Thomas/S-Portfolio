@@ -258,6 +258,7 @@ export default function DomeGallery({
     inertiaRAF.current = requestAnimationFrame(step);
   }, [maxVerticalRotationDeg, stopInertia]);
 
+  // --- FIXED GESTURE HANDLER ---
   useGesture({
     onDragStart: ({ event }) => {
       if (focusedElRef.current) return;
@@ -272,16 +273,17 @@ export default function DomeGallery({
       const nextY = startRotRef.current.y + mx / dragSensitivity;
       rotationRef.current = { x: nextX, y: nextY };
       applyTransform(nextX, nextY);
+      
       if (last) {
         draggingRef.current = false;
         startInertia(vx * (mx < 0 ? -1 : 1), vy * (my < 0 ? -1 : 1));
       }
+    },
+    onDragEnd: () => {
+        draggingRef.current = false;
     }
   }, { target: mainRef, eventOptions: { passive: false } });
 
-  // ------------------------------------------------------
-  // Logic to open image (Expand)
-  // ------------------------------------------------------
   const openItemFromElement = el => {
     if (openingRef.current) return;
     openingRef.current = true;
@@ -359,7 +361,7 @@ export default function DomeGallery({
     img.style.width = '100%';
     img.style.height = '100%';
     img.style.objectFit = 'cover';
-    img.style.filter = grayscale ? 'grayscale(0)' : 'none'; // Remove grayscale on expand
+    img.style.filter = grayscale ? 'grayscale(0)' : 'none'; 
     overlay.appendChild(img);
     viewerRef.current.appendChild(overlay);
 
@@ -547,9 +549,7 @@ export default function DomeGallery({
     };
   }, []);
 
-  // ------------------------------------------------------
-  // CSS Styles: Restored 520px radius & Kept Hover Effects
-  // ------------------------------------------------------
+  // --- RE-ADDED CSS STYLES ---
   const cssStyles = `
     .sphere-root { 
       --radius: 520px; 
@@ -618,7 +618,6 @@ export default function DomeGallery({
       transform: translateZ(0); 
     }
 
-    /* Hover Effect */
     .item__image:hover {
       transform: scale(1.2) translateZ(40px);
       z-index: 100;
@@ -708,6 +707,7 @@ export default function DomeGallery({
                       src={it.src}
                       draggable={false}
                       alt={it.alt}
+                      loading="lazy" // Added for performance
                       className="w-full h-full object-cover pointer-events-none"
                       style={{
                         backfaceVisibility: 'hidden',
