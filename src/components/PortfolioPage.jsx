@@ -23,7 +23,6 @@ const ProjectDetails = ({ project, index, progress, totalProjects }) => {
         // Renders the project details text overlay
         <motion.div style={{ opacity, y }} className="absolute inset-0 flex items-center justify-center">
             
-            {/* FIX APPLIED: Changed alignment to consistently left-aligned */}
             <div className="w-full text-left"> 
                 <div className="inline-flex items-center gap-4 mb-3">
                     <p className="font-bold text-lg text-tan">{String(index + 1).padStart(2, '0')}</p>
@@ -128,13 +127,14 @@ const PortfolioPage = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Fetches all projects, orders by date, and gets the URL of the first media item for the cover
+        // FIX: We now use 'coalesce'. It checks if 'mediaItems[0].url' exists (External Link).
+        // If not, it falls back to 'mediaItems[0].asset->url' (Standard Uploaded Image).
         const query = `*[_type == "project"] | order(date desc) {
             _id,
             title,
             category,
             date,
-            "coverImageUrl": mediaItems[0].url, // Correctly retrieves the URL from the mediaItems array
+            "coverImageUrl": coalesce(mediaItems[0].url, mediaItems[0].asset->url)
         }`;
 
         client.fetch(query)
