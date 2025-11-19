@@ -5,6 +5,26 @@ import { client } from '../sanity';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
 // -------------------------------------------------------------------
+// Helper: Convert Drive Share Link -> Direct Image Link
+// -------------------------------------------------------------------
+const getDirectLink = (url) => {
+  if (!url) return '';
+  
+  // Check if it is a Google Drive Link
+  if (url.includes('drive.google.com')) {
+    // Extract the ID
+    const idMatch = url.match(/[-\w]{25,}/);
+    if (idMatch) {
+      // Return the export=view format which acts as a direct image source
+      return `https://drive.google.com/uc?export=view&id=${idMatch[0]}`;
+    }
+  }
+  
+  // Return original URL if it's not Google Drive (e.g. Unsplash, standard image)
+  return url;
+};
+
+// -------------------------------------------------------------------
 // Helper component to convert YouTube URL to Embed URL
 // -------------------------------------------------------------------
 const extractYouTubeEmbed = (url) => {
@@ -36,8 +56,10 @@ const VideoEmbed = ({ src, title }) => {
         </div>
     );
 };
-// -------------------------------------------------------------------
 
+// -------------------------------------------------------------------
+// Parallax Image Component
+// -------------------------------------------------------------------
 const ParallaxImage = ({ src, alt }) => {
     const ref = useRef(null);
     const { scrollYProgress } = useScroll({
@@ -77,13 +99,19 @@ const ProjectDetailPage = () => {
         }`;
         
         // Fetch the current project details, including all media items
+        // NOTE: We use coalesce() here. It checks 'url' (external link). 
+        // If that is null, it fetches 'asset->url' (sanity upload).
         const detailQuery = `*[_type == "project" && _id == $projectId][0] {
             _id,
             title,
             category,
             date,
             excerpt,
-            mediaItems, // Fetch the new array of objects
+            "mediaItems": mediaItems[]{
+                ...,
+                "url": coalesce(url, asset->url), 
+                "alt": alt
+            }
         }`;
 
         Promise.all([
@@ -159,19 +187,25 @@ const ProjectDetailPage = () => {
 
                 {/* --- Right Column (Scrollable Image/Video Gallery) --- */}
                 <div className="space-y-8">
-                    {project.mediaItems.map((item, index) => (
-                        <div key={index}>
-                            {/* Renders VideoEmbed for YouTube, or ParallaxImage for all others */}
-                            {item.type === 'youtube' ? (
-                                <VideoEmbed src={item.url} title={item.alt || project.title} />
-                            ) : (
-                                <ParallaxImage
-                                    src={item.url}
-                                    alt={item.alt || `${project.title} shot ${index + 1}`}
-                                />
-                            )}
-                        </div>
-                    ))}
+                    {project.mediaItems && project.mediaItems.map((item, index) => {
+                        
+                        // Convert URL if it's a Google Drive link
+                        const directUrl = getDirectLink(item.url);
+
+                        return (
+                            <div key={index}>
+                                {/* Renders VideoEmbed for YouTube, or ParallaxImage for all others */}
+                                {item.type === 'youtube' ? (
+                                    <VideoEmbed src={item.url} title={item.alt || project.title} />
+                                ) : (
+                                    <ParallaxImage
+                                        src={directUrl}
+                                        alt={item.alt || `${project.title} shot ${index + 1}`}
+                                    />
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </motion.div>

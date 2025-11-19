@@ -45,7 +45,7 @@ export default {
           type: 'object',
           name: 'externalMedia',
           title: 'External Media (URL)',
-          icon: () => 'Lx',
+          icon: () => '🔗',
           fields: [
             {
               name: 'url',
