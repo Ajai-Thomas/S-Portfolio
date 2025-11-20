@@ -36,7 +36,8 @@ const BlogPage = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="container mx-auto px-4 py-16"
+      // CHANGED: Increased top padding from py-16 to pt-32 (top) and pb-16 (bottom)
+      className="container mx-auto px-4 pt-32 pb-16"
     >
       <div className="text-center mb-16">
         <h1 className="text-6xl font-black tracking-tighter">DIARY</h1>

@@ -13,7 +13,10 @@ export default {
           'tan': '#DEC19B',
         },
         fontFamily: {
-          sans: ['Inter', 'sans-serif'],
+          // Use Manrope for the default sans font (cleaner)
+          sans: ['Manrope', 'sans-serif'],
+          // Use Syne for specific display text (aesthetic)
+          display: ['Syne', 'sans-serif'],
         },
       },
     },

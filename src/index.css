@@ -1,5 +1,5 @@
-/* Import the Google Font first */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+/* Import Google Fonts: Syne (Aesthetic/Display) and Manrope (Clean/Body) */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Syne:wght@400..800&display=swap');
 
 /* Then, import the Tailwind directives */
 @import "tailwindcss";
@@ -72,8 +72,8 @@
   margin: auto; 
   transform-origin: 50% 50%; 
   backface-visibility: hidden; 
-  /* OPTIMIZATION: Containment hints to reduce rendering cost */
-  contain: layout paint style;
+  /* OPTIMIZATION: Removed transform transition to reduce overhead */
+  /* transition: transform 300ms; */
   transform: rotateY(calc(var(--rot-y) * (var(--offset-x) + ((var(--item-size-x) - 1) / 2)) + var(--rot-y-delta, 0deg))) 
              rotateX(calc(var(--rot-x) * (var(--offset-y) - ((var(--item-size-y) - 1) / 2)) + var(--rot-x-delta, 0deg))) 
              translateZ(var(--radius)); 

@@ -1,7 +1,9 @@
 // src/components/Footer.jsx
 const Footer = () => {
   return (
-    <footer className="border-t border-black/10 mt-16 pt-8 pb-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-xs tracking-wider">
+    // Added px-8 md:px-16 for horizontal padding
+    // Increased pt-8 to pt-12 for better vertical spacing
+    <footer className="border-t border-black/10 mt-16 pt-12 pb-16 px-8 md:px-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-xs tracking-wider">
       <div>
         <p className="font-bold mb-2">Web</p>
         <a href="#" className="hover:opacity-70">GETINTOUCH@STORYTELLING.COM</a>
