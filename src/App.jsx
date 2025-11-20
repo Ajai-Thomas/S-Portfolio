@@ -13,14 +13,32 @@ import ContactPage from './components/ContactPage';
 import GalleryPage from './components/GalleryPage';
 import { client } from './sanity'; 
 
-// Helper to process links during preload
-const getDirectLink = (url) => {
-  if (!url) return '';
+// Helper to process links and generate both Thumb and Full versions
+const processMediaUrls = (url) => {
+  if (!url) return null;
+  
+  // 1. Handle Google Drive Links (No resize support, use same link for both)
   if (url.includes('drive.google.com')) {
     const idMatch = url.match(/[-\w]{25,}/);
-    if (idMatch) return `https://drive.google.com/uc?export=view&id=${idMatch[0]}`;
+    if (idMatch) {
+      const direct = `https://drive.google.com/uc?export=view&id=${idMatch[0]}`;
+      return { thumb: direct, full: direct };
+    }
   }
-  return url;
+  
+  // 2. Handle Sanity Images - THE IMPORTANT PART
+  if (url.includes('cdn.sanity.io')) {
+      return {
+        // SPHERE: Tiny 400px texture, medium quality (Fast FPS)
+        thumb: `${url}?w=400&h=400&fit=crop&auto=format&q=75`,
+        
+        // OVERLAY: Large 2400px image, Max quality (Crystal Clear)
+        full: `${url}?w=2400&auto=format&q=100` 
+      };
+  }
+
+  // Fallback for other URLs
+  return { thumb: url, full: url };
 };
 
 function App() {
@@ -42,7 +60,7 @@ function App() {
       .then((data) => {
         const images = data
             .flatMap(p => p.allMedia || [])
-            .map(m => getDirectLink(m.url))
+            .map(m => processMediaUrls(m.url)) // Returns objects {thumb, full}
             .filter(Boolean);
         setGalleryImages(images);
       })

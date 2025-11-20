@@ -4,13 +4,28 @@ import { motion } from 'framer-motion';
 import { client } from '../sanity';
 import DomeGallery from './DomeGallery';
 
-const getDirectLink = (url) => {
-  if (!url) return '';
+// Helper to generate Thumb/Full objects
+const processMediaUrls = (url) => {
+  if (!url) return null;
+  
   if (url.includes('drive.google.com')) {
     const idMatch = url.match(/[-\w]{25,}/);
-    if (idMatch) return `https://drive.google.com/uc?export=view&id=${idMatch[0]}`;
+    if (idMatch) {
+      const direct = `https://drive.google.com/uc?export=view&id=${idMatch[0]}`;
+      return { thumb: direct, full: direct };
+    }
   }
-  return url;
+
+  if (url.includes('cdn.sanity.io')) {
+      return {
+        // Low Res for 3D Sphere
+        thumb: `${url}?w=400&h=400&fit=crop&auto=format&q=75`,
+        // High Res for Clicked View
+        full: `${url}?w=2400&auto=format&q=100`
+      };
+  }
+
+  return { thumb: url, full: url };
 };
 
 // Accept preloadedImages prop to avoid re-fetching
@@ -39,7 +54,7 @@ const GalleryPage = ({ preloadedImages = [] }) => {
             .then((data) => {
                 const images = data
                     .flatMap(p => p.allMedia || [])
-                    .map(m => getDirectLink(m.url))
+                    .map(m => processMediaUrls(m.url))
                     .filter(Boolean);
                 
                 setAllImages(images);
@@ -56,7 +71,9 @@ const GalleryPage = ({ preloadedImages = [] }) => {
         <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }}
+            // OPTIMIZATION: Instant exit prevents browser from trying to calculate 
+            // opacity on 100+ moving 3D layers simultaneously
+            exit={{ opacity: 0, transition: { duration: 0.01 } }} 
             className="w-full h-screen bg-black overflow-hidden relative z-0"
         >
             <div className="w-full h-full">

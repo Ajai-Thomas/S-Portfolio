@@ -9,7 +9,7 @@ const DEFAULTS = {
   maxVerticalRotationDeg: 15,
   dragSensitivity: 20,
   enlargeTransitionMs: 300,
-  segments: 35,
+  segments: 24, // OPTIMIZATION: Low segment count for FPS
   autoRotateSpeed: 0.05
 };
 
@@ -37,18 +37,24 @@ function buildItems(pool, seg) {
 
   const totalSlots = coords.length;
   if (!pool || pool.length === 0) {
-    return coords.map(c => ({ ...c, src: '', alt: '' }));
+    return coords.map(c => ({ ...c, src: '', full: '', alt: '' }));
   }
 
   const normalizedImages = pool.map(image => {
+    // Handle legacy string array or new object array
     if (typeof image === 'string') {
-      return { src: image, alt: '' };
+      return { src: image, full: image, alt: '' };
     }
-    return { src: image.src || '', alt: image.alt || '' };
+    return { 
+      src: image.thumb || image.src || '', 
+      full: image.full || image.src || '', 
+      alt: image.alt || '' 
+    };
   });
 
   const usedImages = Array.from({ length: totalSlots }, (_, i) => normalizedImages[i % normalizedImages.length]);
 
+  // Shuffle to prevent adjacent duplicates
   for (let i = 1; i < usedImages.length; i++) {
     if (usedImages[i].src === usedImages[i - 1].src) {
       for (let j = i + 1; j < usedImages.length; j++) {
@@ -65,6 +71,7 @@ function buildItems(pool, seg) {
   return coords.map((c, i) => ({
     ...c,
     src: usedImages[i].src,
+    full: usedImages[i].full,
     alt: usedImages[i].alt
   }));
 }
@@ -144,6 +151,8 @@ export default function DomeGallery({
 
   // Auto Rotation Loop
   useEffect(() => {
+    let timeoutId;
+
     const animate = () => {
       if (!draggingRef.current && !openingRef.current && !focusedElRef.current && !inertiaRAF.current) {
          rotationRef.current.y = wrapAngleSigned(rotationRef.current.y + DEFAULTS.autoRotateSpeed);
@@ -151,8 +160,14 @@ export default function DomeGallery({
       }
       autoRotateRAF.current = requestAnimationFrame(animate);
     };
-    autoRotateRAF.current = requestAnimationFrame(animate);
+
+    // OPTIMIZATION: Wait 600ms before starting animation loop to allow page transition
+    timeoutId = setTimeout(() => {
+      autoRotateRAF.current = requestAnimationFrame(animate);
+    }, 600);
+
     return () => {
+      clearTimeout(timeoutId);
       if (autoRotateRAF.current) cancelAnimationFrame(autoRotateRAF.current);
     };
   }, []);
@@ -198,29 +213,6 @@ export default function DomeGallery({
       root.style.setProperty('--enlarge-radius', openedImageBorderRadius);
       root.style.setProperty('--image-filter', grayscale ? 'grayscale(1)' : 'none');
       applyTransform(rotationRef.current.x, rotationRef.current.y);
-
-      const enlargedOverlay = viewerRef.current?.querySelector('.enlarge');
-      if (enlargedOverlay && frameRef.current && mainRef.current) {
-        const frameR = frameRef.current.getBoundingClientRect();
-        const mainR = mainRef.current.getBoundingClientRect();
-        const hasCustomSize = openedImageWidth && openedImageHeight;
-        if (hasCustomSize) {
-           const tempDiv = document.createElement('div');
-           tempDiv.style.cssText = `position: absolute; width: ${openedImageWidth}; height: ${openedImageHeight}; visibility: hidden;`;
-           document.body.appendChild(tempDiv);
-           const tempRect = tempDiv.getBoundingClientRect();
-           document.body.removeChild(tempDiv);
-           const centeredLeft = frameR.left - mainR.left + (frameR.width - tempRect.width) / 2;
-           const centeredTop = frameR.top - mainR.top + (frameR.height - tempRect.height) / 2;
-           enlargedOverlay.style.left = `${centeredLeft}px`;
-           enlargedOverlay.style.top = `${centeredTop}px`;
-        } else {
-          enlargedOverlay.style.left = `${frameR.left - mainR.left}px`;
-          enlargedOverlay.style.top = `${frameR.top - mainR.top}px`;
-          enlargedOverlay.style.width = `${frameR.width}px`;
-          enlargedOverlay.style.height = `${frameR.height}px`;
-        }
-      }
     });
     ro.observe(root);
     return () => ro.disconnect();
@@ -258,7 +250,6 @@ export default function DomeGallery({
     inertiaRAF.current = requestAnimationFrame(step);
   }, [maxVerticalRotationDeg, stopInertia]);
 
-  // --- FIXED GESTURE HANDLER ---
   useGesture({
     onDragStart: ({ event }) => {
       if (focusedElRef.current) return;
@@ -353,15 +344,28 @@ export default function DomeGallery({
     overlay.style.overflow = 'hidden';
     overlay.style.boxShadow = '0 10px 30px rgba(0,0,0,.35)';
 
-    const rawSrc = parent.dataset.src || el.querySelector('img')?.src || '';
-    const rawAlt = parent.dataset.alt || el.querySelector('img')?.alt || '';
+    // --- LOGIC FOR HIGH RES IMAGE SWAP ---
+    const thumbSrc = parent.dataset.src || '';
+    const fullSrc = parent.dataset.full || '';
+    const rawAlt = parent.dataset.alt || '';
+    
+    const finalSrc = fullSrc || thumbSrc;
+
     const img = document.createElement('img');
-    img.src = rawSrc;
+    img.src = finalSrc;
     img.alt = rawAlt;
     img.style.width = '100%';
     img.style.height = '100%';
     img.style.objectFit = 'cover';
     img.style.filter = grayscale ? 'grayscale(0)' : 'none'; 
+    
+    // Use Thumbnail as background while Full image loads
+    if (thumbSrc) {
+        img.style.backgroundImage = `url(${thumbSrc})`;
+        img.style.backgroundSize = 'cover';
+        img.style.backgroundPosition = 'center';
+    }
+
     overlay.appendChild(img);
     viewerRef.current.appendChild(overlay);
 
@@ -549,91 +553,9 @@ export default function DomeGallery({
     };
   }, []);
 
-  // --- RE-ADDED CSS STYLES ---
-  const cssStyles = `
-    .sphere-root { 
-      --radius: 520px; 
-      --viewer-pad: 72px; 
-      --circ: calc(var(--radius) * 3.14); 
-      --rot-y: calc((360deg / var(--segments-x)) / 2); 
-      --rot-x: calc((360deg / var(--segments-y)) / 2); 
-      --item-width: calc(var(--circ) / var(--segments-x)); 
-      --item-height: calc(var(--circ) / var(--segments-y)); 
-    }
-    .sphere-root * { box-sizing: border-box; }
-    .sphere, .sphere-item, .item__image { transform-style: preserve-3d; }
-    
-    .stage { 
-      width: 100%; 
-      height: 100%; 
-      display: grid; 
-      place-items: center; 
-      position: absolute; 
-      inset: 0; 
-      margin: auto; 
-      perspective: calc(var(--radius) * 2); 
-      perspective-origin: 50% 50%; 
-    }
-    
-    .sphere { 
-      transform: translateZ(calc(var(--radius) * -1)); 
-      will-change: transform; 
-      position: absolute; 
-    }
-    
-    .sphere-item { 
-      width: calc(var(--item-width) * var(--item-size-x)); 
-      height: calc(var(--item-height) * var(--item-size-y)); 
-      position: absolute; 
-      top: -999px; bottom: -999px; left: -999px; right: -999px; 
-      margin: auto; 
-      transform-origin: 50% 50%; 
-      backface-visibility: hidden; 
-      transition: transform 300ms; 
-      transform: rotateY(calc(var(--rot-y) * (var(--offset-x) + ((var(--item-size-x) - 1) / 2)) + var(--rot-y-delta, 0deg))) 
-                 rotateX(calc(var(--rot-x) * (var(--offset-y) - ((var(--item-size-y) - 1) / 2)) + var(--rot-x-delta, 0deg))) 
-                 translateZ(var(--radius)); 
-    }
-    
-    .sphere-root[data-enlarging="true"] .scrim {
-      opacity: 1 !important;
-      pointer-events: all !important;
-    }
-    
-    @media (max-aspect-ratio: 1/1) {
-      .viewer-frame {
-        height: auto !important;
-        width: 100% !important;
-      }
-    }
-    
-    .item__image { 
-      position: absolute; 
-      inset: 10px; 
-      border-radius: var(--tile-radius, 12px); 
-      overflow: hidden; 
-      cursor: pointer; 
-      backface-visibility: hidden; 
-      transition: transform 0.3s ease, box-shadow 0.3s ease; 
-      transform: translateZ(0); 
-    }
-
-    .item__image:hover {
-      transform: scale(1.2) translateZ(40px);
-      z-index: 100;
-      box-shadow: 0 10px 25px rgba(255,255,255, 0.2);
-    }
-
-    .item__image--reference {
-      position: absolute;
-      inset: 10px;
-      pointer-events: none;
-    }
-  `;
-
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: cssStyles }} />
+      {/* OPTIMIZATION: Styles moved to src/index.css */}
       <div
         ref={rootRef}
         className="sphere-root relative w-full h-full"
@@ -661,6 +583,7 @@ export default function DomeGallery({
                   key={`${it.x},${it.y},${i}`}
                   className="sphere-item absolute m-auto"
                   data-src={it.src}
+                  data-full={it.full} // NEW: Pass full res URL to DOM
                   data-alt={it.alt}
                   data-offset-x={it.x}
                   data-offset-y={it.y}
@@ -704,10 +627,11 @@ export default function DomeGallery({
                     }}
                   >
                     <img
-                      src={it.src}
+                      src={it.src} // THUMBNAIL
                       draggable={false}
                       alt={it.alt}
-                      loading="lazy" // Added for performance
+                      loading="lazy"
+                      decoding="async" // OPTIMIZATION: Async decode
                       className="w-full h-full object-cover pointer-events-none"
                       style={{
                         backfaceVisibility: 'hidden',
