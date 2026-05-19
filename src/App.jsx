@@ -11,13 +11,12 @@ import BlogPage from './components/BlogPage';
 import BlogPostPage from './components/BlogPostPage';
 import ContactPage from './components/ContactPage';
 import GalleryPage from './components/GalleryPage';
+import AdminPage from './components/AdminPage';
 import { client } from './sanity'; 
 
-// Helper to process links and generate both Thumb and Full versions
 const processMediaUrls = (url) => {
   if (!url) return null;
   
-  // 1. Handle Google Drive Links (No resize support, use same link for both)
   if (url.includes('drive.google.com')) {
     const idMatch = url.match(/[-\w]{25,}/);
     if (idMatch) {
@@ -26,30 +25,24 @@ const processMediaUrls = (url) => {
     }
   }
   
-  // 2. Handle Sanity Images - THE IMPORTANT PART
   if (url.includes('cdn.sanity.io')) {
       return {
-        // SPHERE: Tiny 400px texture, medium quality (Fast FPS)
         thumb: `${url}?w=400&h=400&fit=crop&auto=format&q=75`,
-        
-        // OVERLAY: Large 2400px image, Max quality (Crystal Clear)
         full: `${url}?w=2400&auto=format&q=100` 
       };
   }
 
-  // Fallback for other URLs
   return { thumb: url, full: url };
 };
 
 function App() {
   const location = useLocation();
   const isGallery = location.pathname === '/gallery';
-
-  // --- PRELOAD GALLERY DATA ---
+  const isAdmin = location.pathname === '/admin';
   const [galleryImages, setGalleryImages] = useState([]);
 
   useEffect(() => {
-    // Fetch gallery images silently in the background
+    // Fetch project media for the gallery background preloading
     const query = `*[_type == "project"] {
         "allMedia": mediaItems[]{
             "url": coalesce(url, asset->url)
@@ -58,29 +51,34 @@ function App() {
 
     client.fetch(query)
       .then((data) => {
+        if (!data) return;
         const images = data
             .flatMap(p => p.allMedia || [])
-            .map(m => processMediaUrls(m.url)) // Returns objects {thumb, full}
+            .map(m => m?.url ? processMediaUrls(m.url) : null)
             .filter(Boolean);
         setGalleryImages(images);
       })
-      .catch(console.error);
+      .catch(err => console.error("Gallery preload failed:", err));
   }, []);
-  // -----------------------------
+
+  if (isAdmin) {
+    return (
+      <Routes location={location} key={location.pathname}>
+        <Route path="/admin" element={<AdminPage />} />
+      </Routes>
+    );
+  }
 
   return (
     <div className="font-sans text-black bg-ivory min-h-screen flex flex-col">
       <Navbar />
 
-      <div className={`flex-grow w-full ${isGallery ? '' : 'max-w-7xl mx-auto px-6 md:px-12'}`}>
+      <div className={`grow w-full ${isGallery ? '' : 'max-w-7xl mx-auto px-6 md:px-12'}`}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PortfolioPage />} />
             <Route path="/project/:projectId" element={<ProjectDetailPage />} />
-            
-            {/* Pass preloaded images to GalleryPage for instant load */}
             <Route path="/gallery" element={<GalleryPage preloadedImages={galleryImages} />} />
-            
             <Route path="/about" element={<AboutPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:postId" element={<BlogPostPage />} />
@@ -88,7 +86,7 @@ function App() {
           </Routes>
         </AnimatePresence>
       </div>
-      
+
       {!isGallery && <Footer />}
     </div>
   );

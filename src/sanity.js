@@ -9,6 +9,15 @@ export const client = createClient({
   apiVersion: '2024-05-14', // Use a consistent date
 });
 
+// Write client for admin operations — requires VITE_SANITY_WRITE_TOKEN in .env.local
+export const getWriteClient = () => createClient({
+  projectId: '84ksnydx',
+  dataset: 'production',
+  useCdn: false,
+  apiVersion: '2024-05-14',
+  token: import.meta.env.VITE_SANITY_WRITE_TOKEN,
+});
+
 // Get a pre-configured url-builder from your client
 const builder = imageUrlBuilder(client);
 

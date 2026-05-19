@@ -1,13 +1,11 @@
-/* Import Google Fonts: Syne (Aesthetic/Display) and Manrope (Clean/Body) */
+/* src/index.css */
+/* Move Google Fonts to the very top for proper CSS loading */
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Syne:wght@400..800&display=swap');
 
-/* Then, import the Tailwind directives */
+/* Tailwind v4 directive */
 @import "tailwindcss";
-/* src/index.css */
 
-/* ... your other styles at the top ... */
-
-/* New Animation for the Hero Background */
+/* Hero Background Animation */
 .animated-gradient {
   background: linear-gradient(
     45deg,
@@ -20,20 +18,12 @@
 }
 
 @keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* --- DOME GALLERY STYLES --- */
-/* Moved from DomeGallery.jsx to avoid JS injection overhead */
-
 .sphere-root { 
   --radius: 520px; 
   --viewer-pad: 72px; 
@@ -43,6 +33,7 @@
   --item-width: calc(var(--circ) / var(--segments-x)); 
   --item-height: calc(var(--circ) / var(--segments-y)); 
 }
+
 .sphere-root * { box-sizing: border-box; }
 .sphere, .sphere-item, .item__image { transform-style: preserve-3d; }
 
@@ -72,8 +63,6 @@
   margin: auto; 
   transform-origin: 50% 50%; 
   backface-visibility: hidden; 
-  /* OPTIMIZATION: Removed transform transition to reduce overhead */
-  /* transition: transform 300ms; */
   transform: rotateY(calc(var(--rot-y) * (var(--offset-x) + ((var(--item-size-x) - 1) / 2)) + var(--rot-y-delta, 0deg))) 
              rotateX(calc(var(--rot-x) * (var(--offset-y) - ((var(--item-size-y) - 1) / 2)) + var(--rot-x-delta, 0deg))) 
              translateZ(var(--radius)); 
