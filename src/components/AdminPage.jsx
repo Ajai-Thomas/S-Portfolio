@@ -52,7 +52,7 @@ const LoginScreen = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f4f0db]">
+    <div className="min-h-screen flex items-center justify-center bg-admin-bg">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -75,7 +75,7 @@ const LoginScreen = ({ onLogin }) => {
           )}
           <button
             type="submit"
-            className="w-full bg-black text-[#f4f0db] py-3 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors"
+            className="w-full bg-black text-admin-bg py-3 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors"
           >
             Enter
           </button>
@@ -293,7 +293,7 @@ const ProjectForm = ({ project, onSave, onCancel }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f0db] py-16 px-6 md:px-12">
+    <div className="min-h-screen bg-admin-bg py-16 px-6 md:px-12">
       <div className="max-w-2xl mx-auto">
         <button
           onClick={onCancel}
@@ -356,19 +356,19 @@ const ProjectForm = ({ project, onSave, onCancel }) => {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="border border-black/30 px-4 py-2 text-xs tracking-widest uppercase font-bold hover:bg-black hover:text-[#f4f0db] transition-colors"
+              className="border border-black/30 px-4 py-2 text-xs tracking-widest uppercase font-bold hover:bg-black hover:text-admin-bg transition-colors"
             >
               + Upload Image
             </button>
             <button
               onClick={() => { setShowVideoInput(!showVideoInput); setShowImageUrlInput(false); }}
-              className="border border-black/30 px-4 py-2 text-xs tracking-widest uppercase font-bold hover:bg-black hover:text-[#f4f0db] transition-colors"
+              className="border border-black/30 px-4 py-2 text-xs tracking-widest uppercase font-bold hover:bg-black hover:text-admin-bg transition-colors"
             >
               + YouTube URL
             </button>
             <button
               onClick={() => { setShowImageUrlInput(!showImageUrlInput); setShowVideoInput(false); }}
-              className="border border-black/30 px-4 py-2 text-xs tracking-widest uppercase font-bold hover:bg-black hover:text-[#f4f0db] transition-colors"
+              className="border border-black/30 px-4 py-2 text-xs tracking-widest uppercase font-bold hover:bg-black hover:text-admin-bg transition-colors"
             >
               + Image URL
             </button>
@@ -402,7 +402,7 @@ const ProjectForm = ({ project, onSave, onCancel }) => {
                   />
                   <button
                     onClick={handleAddVideoUrl}
-                    className="bg-black text-[#f4f0db] px-4 py-2 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors"
+                    className="bg-black text-admin-bg px-4 py-2 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors"
                   >
                     Add
                   </button>
@@ -430,7 +430,7 @@ const ProjectForm = ({ project, onSave, onCancel }) => {
                   />
                   <button
                     onClick={handleAddImageUrl}
-                    className="bg-black text-[#f4f0db] px-4 py-2 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors"
+                    className="bg-black text-admin-bg px-4 py-2 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors"
                   >
                     Add
                   </button>
@@ -450,13 +450,13 @@ const ProjectForm = ({ project, onSave, onCancel }) => {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="bg-black text-[#f4f0db] px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors disabled:opacity-40"
+            className="bg-black text-admin-bg px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors disabled:opacity-40"
           >
             {saving ? 'Saving...' : 'Save Project'}
           </button>
           <button
             onClick={onCancel}
-            className="border border-black/30 px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-black hover:text-[#f4f0db] transition-colors"
+            className="border border-black/30 px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-black hover:text-admin-bg transition-colors"
           >
             Cancel
           </button>
@@ -530,7 +530,7 @@ const BlogPostForm = ({ post, onSave, onCancel }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f0db] py-16 px-6 md:px-12">
+    <div className="min-h-screen bg-admin-bg py-16 px-6 md:px-12">
       <div className="max-w-2xl mx-auto">
         <button
           onClick={onCancel}
@@ -597,13 +597,13 @@ const BlogPostForm = ({ post, onSave, onCancel }) => {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="bg-black text-[#f4f0db] px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors disabled:opacity-40"
+            className="bg-black text-admin-bg px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors disabled:opacity-40"
           >
             {saving ? 'Saving...' : 'Save Post'}
           </button>
           <button
             onClick={onCancel}
-            className="border border-black/30 px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-black hover:text-[#f4f0db] transition-colors"
+            className="border border-black/30 px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-black hover:text-admin-bg transition-colors"
           >
             Cancel
           </button>
@@ -620,7 +620,7 @@ const DeleteDialog = ({ item, label, onConfirm, onCancel, deleting }) => (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-[#f4f0db] p-8 max-w-sm w-full"
+      className="bg-admin-bg p-8 max-w-sm w-full"
     >
       <h3 className="text-xl font-black tracking-tighter mb-2">Delete {label}?</h3>
       <p className="text-sm text-black/60 mb-6">
@@ -631,12 +631,12 @@ const DeleteDialog = ({ item, label, onConfirm, onCancel, deleting }) => (
           onClick={onConfirm}
           disabled={deleting}
           className="bg-red-600 text-white px-6 py-2 text-xs font-bold tracking-widest uppercase hover:bg-red-700 transition-colors disabled:opacity-40"
-        >
+          >
           {deleting ? 'Deleting...' : 'Delete'}
         </button>
         <button
           onClick={onCancel}
-          className="border border-black/30 px-6 py-2 text-xs font-bold tracking-widest uppercase hover:bg-black hover:text-[#f4f0db] transition-colors"
+          className="border border-black/30 px-6 py-2 text-xs font-bold tracking-widest uppercase hover:bg-black hover:text-admin-bg transition-colors"
         >
           Cancel
         </button>
@@ -721,7 +721,7 @@ const Dashboard = ({ onEdit, onCreate, onEditBlog, onCreateBlog, onLogout }) => 
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f0db] py-16 px-6 md:px-12">
+    <div className="min-h-screen bg-admin-bg py-16 px-6 md:px-12">
       <div className="max-w-5xl mx-auto">
 
         {/* Header */}
@@ -770,7 +770,7 @@ const Dashboard = ({ onEdit, onCreate, onEditBlog, onCreateBlog, onLogout }) => 
           <>
             <button
               onClick={onCreate}
-              className="mb-10 bg-black text-[#f4f0db] px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors"
+              className="mb-10 bg-black text-admin-bg px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors"
             >
               + New Project
             </button>
@@ -815,7 +815,7 @@ const Dashboard = ({ onEdit, onCreate, onEditBlog, onCreateBlog, onLogout }) => 
                     <div className="flex gap-3 shrink-0">
                       <button
                         onClick={() => onEdit(project)}
-                        className="text-xs font-bold tracking-widest uppercase border border-black/30 px-4 py-2 hover:bg-black hover:text-[#f4f0db] transition-colors"
+                        className="text-xs font-bold tracking-widest uppercase border border-black/30 px-4 py-2 hover:bg-black hover:text-admin-bg transition-colors"
                       >
                         Edit
                       </button>
@@ -840,7 +840,7 @@ const Dashboard = ({ onEdit, onCreate, onEditBlog, onCreateBlog, onLogout }) => 
           <>
             <button
               onClick={onCreateBlog}
-              className="mb-10 bg-black text-[#f4f0db] px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors"
+              className="mb-10 bg-black text-admin-bg px-8 py-3 text-xs font-bold tracking-widest uppercase hover:bg-[#dec19b] hover:text-black transition-colors"
             >
               + New Post
             </button>
@@ -872,7 +872,7 @@ const Dashboard = ({ onEdit, onCreate, onEditBlog, onCreateBlog, onLogout }) => 
                     <div className="flex gap-3 shrink-0">
                       <button
                         onClick={() => onEditBlog(post)}
-                        className="text-xs font-bold tracking-widest uppercase border border-black/30 px-4 py-2 hover:bg-black hover:text-[#f4f0db] transition-colors"
+                        className="text-xs font-bold tracking-widest uppercase border border-black/30 px-4 py-2 hover:bg-black hover:text-admin-bg transition-colors"
                       >
                         Edit
                       </button>
