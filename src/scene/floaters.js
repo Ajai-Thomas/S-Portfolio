@@ -116,7 +116,7 @@ export function buildFloaters({ count, photos = [], loader }) {
       radius: 2.2 + Math.random() * 2.4,
       speed: (0.04 + Math.random() * 0.08) * (i % 2 ? 1 : -1),
       y: (Math.random() - 0.5) * 3.2,
-      z: (Math.random() - 0.35) * 3.4,
+      z: (Math.random() - 0.62) * 3.4,
       spin: new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(0.5),
       bob: Math.random() * 6,
       alpha: type === 'leak' ? 0.5 : 1,

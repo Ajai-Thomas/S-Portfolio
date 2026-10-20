@@ -78,7 +78,7 @@ export const KEYFRAMES = [
   { p: 0.88, cam: [0, 0.3, 9.4], target: [0, 0, 0], fov: 34, pos: [-3.5, 0.3, 0], rot: [0.04, Math.PI / 2, 0], scale: 0.85, bg: works, split: 0.5, bokeh: 0.8, range: 6, bloom: 0.25, fog: 0.02, floaters: 0.1, follow: 0.1 },
 
   // 6 · CONTACT: turn back to face the viewer ───────────────────────────────
-  { p: 1.0, cam: [0, 0.2, 8.2], target: [0, 0, 0], fov: 34, pos: [0, -0.2, 0], rot: REST_ROT, scale: 1, bg: outro, split: 0.5, bokeh: 1.4, range: 4.5, bloom: 0.5, fog: 0.03, floaters: 0.7, follow: 0.8 },
+  { p: 1.0, cam: [0, 0.2, 8.2], target: [0, 0, 0], fov: 34, pos: [0, -0.2, 0], rot: REST_ROT, scale: 1, bg: outro, split: 0.5, bokeh: 1.4, range: 4.5, bloom: 0.5, fog: 0.03, floaters: 0.35, follow: 0.8 },
 ];
 
 // How many floating objects at each quality level.
