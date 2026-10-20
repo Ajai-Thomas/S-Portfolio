@@ -40,17 +40,21 @@ void main(){
   vec3 c = mix(colA, colB, t);
   c += (uv.y - 0.5) * 0.05;            // soft vertical falloff
   gl_FragColor = vec4(c, 1.0);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
 }`;
 
 export async function createScene({ canvas, lite = false, theme = 'dark', photos = [], onProgress = () => {} }) {
   const tick = (v) => { onProgress(v); return new Promise((r) => setTimeout(r, 0)); };
-  const maxDpr = lite ? 1.25 : 2;
+  const maxDpr = lite ? 1 : 2;
   let dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
 
   // 1 · renderer ───────────────────────────────────────────────────────────
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', alpha: false, stencil: false });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: lite, powerPreference: 'high-performance', alpha: false, stencil: false });
   renderer.setPixelRatio(dpr);
   renderer.setSize(window.innerWidth, window.innerHeight, false);
+  // Phones skip the post-processing chain entirely: tone-map straight to the screen.
+  if (lite) renderer.toneMapping = THREE.NeutralToneMapping;
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x222222, 0.03);
   const camera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.1, 80);
@@ -66,7 +70,8 @@ export async function createScene({ canvas, lite = false, theme = 'dark', photos
   const rim = new THREE.DirectionalLight(0x8fb4ff, 1.4);
   rim.position.set(-4, 2, -3);
   const cursorLight = new THREE.PointLight(0xffe2c0, 18, 12, 1.6); // the lens "looks" at the cursor
-  scene.add(key, rim, cursorLight);
+  scene.add(key, rim);
+  if (!lite) scene.add(cursorLight); // per-pixel light: desktop only
   await tick(0.3);
 
   // 3 · background split + camera model ────────────────────────────────────
@@ -103,7 +108,7 @@ export async function createScene({ canvas, lite = false, theme = 'dark', photos
     holder.scale.setScalar(2.5 / Math.max(size.x, size.z, 0.001));
     built = { root: holder, glass: null, dispose() { gltf.scene.traverse((o) => { o.geometry?.dispose(); [].concat(o.material || []).forEach((m) => m.dispose()); }); draco.dispose(); } };
   } else {
-    built = buildCameraModel();
+    built = buildCameraModel({ lite });
   }
   tilt.add(built.root);
   await tick(0.55);
@@ -114,20 +119,23 @@ export async function createScene({ canvas, lite = false, theme = 'dark', photos
   scene.add(floaters.group);
   await tick(0.7);
 
-  // 5 · post-processing ────────────────────────────────────────────────────
-  const composer = new EffectComposer(renderer, { multisampling: lite ? 0 : 4, frameBufferType: THREE.HalfFloatType });
-  composer.addPass(new RenderPass(scene, camera));
-  const dof = new DepthOfFieldEffect(camera, { focusDistance: 7, focusRange: 5, bokehScale: 1, resolutionScale: lite ? 0.35 : 0.5 });
-  const bloom = new BloomEffect({ intensity: 0.4, luminanceThreshold: 0.78, luminanceSmoothing: 0.3, mipmapBlur: true });
-  const chroma = new ChromaticAberrationEffect({ offset: new THREE.Vector2(0.0006, 0.0006), radialModulation: true, modulationOffset: 0.3 });
-  const grain = new NoiseEffect({ blendFunction: BlendFunction.OVERLAY, premultiply: true });
-  grain.blendMode.opacity.value = 0.22;
-  const vignette = new VignetteEffect({ offset: 0.32, darkness: 0.55 });
-  const tone = new ToneMappingEffect({ mode: ToneMappingMode.NEUTRAL });
-  let dofPass = null;
-  if (!lite) { dofPass = new EffectPass(camera, dof); composer.addPass(dofPass); }
-  composer.addPass(new EffectPass(camera, bloom));
-  composer.addPass(new EffectPass(camera, ...(lite ? [tone, grain, vignette] : [chroma, tone, grain, vignette])));
+  // 5 · post-processing (desktop only) ─────────────────────────────────────
+  let composer = null, dof = null, dofPass = null, bloom = null, chroma = null;
+  if (!lite) {
+    composer = new EffectComposer(renderer, { multisampling: 4, frameBufferType: THREE.HalfFloatType });
+    composer.addPass(new RenderPass(scene, camera));
+    dof = new DepthOfFieldEffect(camera, { focusDistance: 7, focusRange: 5, bokehScale: 1, resolutionScale: 0.5 });
+    bloom = new BloomEffect({ intensity: 0.4, luminanceThreshold: 0.78, luminanceSmoothing: 0.3, mipmapBlur: true });
+    chroma = new ChromaticAberrationEffect({ offset: new THREE.Vector2(0.0006, 0.0006), radialModulation: true, modulationOffset: 0.3 });
+    const grain = new NoiseEffect({ blendFunction: BlendFunction.OVERLAY, premultiply: true });
+    grain.blendMode.opacity.value = 0.22;
+    const vignette = new VignetteEffect({ offset: 0.32, darkness: 0.55 });
+    const tone = new ToneMappingEffect({ mode: ToneMappingMode.NEUTRAL });
+    dofPass = new EffectPass(camera, dof);
+    composer.addPass(dofPass);
+    composer.addPass(new EffectPass(camera, bloom));
+    composer.addPass(new EffectPass(camera, chroma, tone, grain, vignette));
+  }
   await tick(0.9);
 
   // ── state ────────────────────────────────────────────────────────────────
@@ -144,7 +152,7 @@ export async function createScene({ canvas, lite = false, theme = 'dark', photos
     sizeW = w; sizeH = h;
     renderer.setPixelRatio(dpr);
     renderer.setSize(w, h, false);
-    composer.setSize(w, h, false);
+    composer?.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     bgMat.uniforms.res.value.set(w * dpr, h * dpr);
@@ -217,16 +225,18 @@ export async function createScene({ canvas, lite = false, theme = 'dark', photos
       dof.cocMaterial.focusRange = k.range;
       dof.bokehScale = k.bokeh;
     }
-    bloom.intensity = k.bloom + state.flash * 1.2;
-    chroma.offset.set(0.0005 + state.flash * 0.004, 0.0005 + state.flash * 0.004);
+    if (bloom) {
+      bloom.intensity = k.bloom + state.flash * 1.2;
+      chroma.offset.set(0.0005 + state.flash * 0.004, 0.0005 + state.flash * 0.004);
+    }
 
-    composer.render(dt);
+    if (composer) composer.render(dt); else renderer.render(scene, camera);
 
     // adaptive quality: if we're consistently slow, drop resolution
     state.frames++;
     state.slow = state.slow * 0.95 + dt * 0.05;
-    if (state.frames % 90 === 0 && state.slow > 0.026 && dpr > 1) {
-      dpr = Math.max(1, dpr - 0.25);
+    if (state.frames % 90 === 0 && state.slow > 0.026 && dpr > (lite ? 0.7 : 1)) {
+      dpr = Math.max(lite ? 0.7 : 1, dpr - 0.25);
       resize();
     }
   }
@@ -265,7 +275,7 @@ export async function createScene({ canvas, lite = false, theme = 'dark', photos
       built.dispose();
       bg.geometry.dispose(); bgMat.dispose();
       envRT.dispose(); pmrem.dispose();
-      composer.dispose();
+      composer?.dispose();
       scene.traverse((o) => { o.geometry?.dispose?.(); });
       renderer.dispose();
       renderer.forceContextLoss();

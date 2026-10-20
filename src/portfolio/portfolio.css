@@ -461,3 +461,15 @@ html.pf-smooth { scroll-behavior: smooth; scroll-padding-top: 4rem; }
 @media (pointer: coarse) {
   .pf-gallery [style*='touch-action'] { touch-action: pan-y !important; }
 }
+
+/* Touch / phones: drop the expensive compositing effects */
+@media (pointer: coarse), (max-width: 760px) {
+  .pf-root:not(.pf-modal-wrap)::before { animation: none; inset: 0; opacity: 0.05; }
+  .pf-root:not(.pf-modal-wrap)::after { display: none; }
+  .pf-nav, .pf-journey__list > li, .pf-3d .pf-works .pf-wrap, .pf-3d .pf-contact .pf-wrap { backdrop-filter: none !important; }
+  .pf-nav { background: color-mix(in srgb, var(--pf-bg) 92%, transparent); }
+  .pf-journey__list > li { background: color-mix(in srgb, var(--pf-bg) 86%, transparent); }
+  .pf-3d .pf-works .pf-section:not(.pf-section--gallery) .pf-wrap, .pf-3d .pf-contact .pf-wrap { background: color-mix(in srgb, var(--pf-bg) 88%, transparent); }
+  .pf-strip__track { animation: none; }
+  .pf-hero__name .pf-letter > span { font-variation-settings: 'wght' 500; }
+}

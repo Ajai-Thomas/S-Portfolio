@@ -82,4 +82,4 @@ export const KEYFRAMES = [
 ];
 
 // How many floating objects at each quality level.
-export const FLOATER_COUNT = { full: 30, lite: 10 };
+export const FLOATER_COUNT = { full: 30, lite: 6 };

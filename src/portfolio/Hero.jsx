@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { reducedMotion } from './util';
+import { finePointer, reducedMotion } from './util';
 
 const pad = (n) => String(n).padStart(2, '0');
 // Static hero art used when WebGL / motion is unavailable.
@@ -25,7 +25,7 @@ export default function Hero({ name, tagline, role, location, fallback }) {
   const [exp, setExp] = useState({ iso: 400, f: 2.8, s: 250 });
 
   useEffect(() => {
-    if (reducedMotion()) return;
+    if (reducedMotion() || !finePointer()) return; // no pointer tracking / re-renders on touch screens
     const el = root.current;
     let raf = 0, tx = 0.5, ty = 0.5, x = 0.5, y = 0.5, last = 0;
     const move = (e) => {

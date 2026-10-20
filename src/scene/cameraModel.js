@@ -20,7 +20,7 @@ function leatherTexture() {
   return t;
 }
 
-export function buildCameraModel() {
+export function buildCameraModel({ lite = false } = {}) {
   const root = new THREE.Group();
   const disposables = [];
   const keep = (o) => { disposables.push(o); return o; };
@@ -31,7 +31,8 @@ export function buildCameraModel() {
   const leather = keep(new THREE.MeshStandardMaterial({ color: 0x141414, metalness: 0.1, roughness: 0.7, bumpMap: bump, bumpScale: 1.4 }));
   const black = keep(new THREE.MeshStandardMaterial({ color: 0x0d0d0e, metalness: 0.5, roughness: 0.35 }));
   const red = keep(new THREE.MeshStandardMaterial({ color: 0xc8301f, metalness: 0.3, roughness: 0.35, emissive: 0x300800 }));
-  const glassMat = keep(new THREE.MeshPhysicalMaterial({
+  // Physical glass (clearcoat + iridescence) is costly on phones: use a plain metal-rough material there.
+  const glassMat = keep(lite ? new THREE.MeshStandardMaterial({ color: 0x03050a, metalness: 0.6, roughness: 0.08, envMapIntensity: 2.2 }) : new THREE.MeshPhysicalMaterial({
     color: 0x010206, metalness: 0.2, roughness: 0.03, clearcoat: 1, clearcoatRoughness: 0.02,
     iridescence: 0.35, iridescenceIOR: 1.5, envMapIntensity: 2.2,
   }));
