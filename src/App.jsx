@@ -12,6 +12,7 @@ import BlogPostPage from './components/BlogPostPage';
 import ContactPage from './components/ContactPage';
 import GalleryPage from './components/GalleryPage';
 import AdminPage from './components/AdminPage';
+import Home from './portfolio/Home';
 import { client } from './sanity'; 
 
 const processMediaUrls = (url) => {
@@ -39,6 +40,7 @@ function App() {
   const location = useLocation();
   const isGallery = location.pathname === '/gallery';
   const isAdmin = location.pathname === '/admin';
+  const isHome = location.pathname === '/';
   const [galleryImages, setGalleryImages] = useState([]);
 
   useEffect(() => {
@@ -67,6 +69,11 @@ function App() {
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     );
+  }
+
+  // New single-page portfolio brings its own nav, footer and layout.
+  if (isHome) {
+    return <Home galleryImages={galleryImages} />;
   }
 
   return (
