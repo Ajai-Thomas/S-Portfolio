@@ -149,6 +149,7 @@ export async function createScene({ canvas, lite = false, theme = 'dark', photos
   window.addEventListener('resize', resize);
 
   function frame(now) {
+    if (state.covered) { state.last = now; return; } // hidden behind the gallery: skip all work
     const dt = Math.min(0.05, (now - state.last) / 1000 || 0.016);
     state.last = now;
     const time = now / 1000;
@@ -242,6 +243,7 @@ export async function createScene({ canvas, lite = false, theme = 'dark', photos
     stop,
     setProgress: (p) => { state.progress = p; },
     setEra: (e) => { state.era = e; },
+    setCovered: (c) => { state.covered = c; },
     setPointer: (x, y) => { state.px = x; state.py = y; }, // both −1 … 1
     setTheme: (t) => { state.theme = t; },
     pulse: () => { state.flash = 1; },

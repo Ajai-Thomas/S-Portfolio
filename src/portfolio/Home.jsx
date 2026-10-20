@@ -115,9 +115,8 @@ export default function Home({ galleryImages }) {
               <SectionHead n={1} title="Gallery" kicker="DRAG TO ROTATE" />
               <span id="gallery-title" className="pf-sr">Gallery</span>
             </div>
-            {/* Existing gallery, unchanged. Mounted when near the viewport.
-                data-lenis-prevent: the gallery handles its own pointer/wheel input. */}
-            <div ref={galleryBox} className="pf-gallery" data-lenis-prevent>
+            {/* Existing gallery, unchanged. Mounted when near the viewport. */}
+            <div ref={galleryBox} className="pf-gallery">
               {nearGallery && <GalleryPage preloadedImages={galleryImages} />}
             </div>
           </section>
