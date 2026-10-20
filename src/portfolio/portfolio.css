@@ -401,3 +401,63 @@ html.pf-smooth { scroll-behavior: smooth; scroll-padding-top: 4rem; }
 .pf-prose a { color: var(--pf-accent); text-decoration: underline; }
 .pf-prose ul, .pf-prose ol { list-style: revert; padding-left: 1.4rem; margin-bottom: 1.2rem; }
 .pf-prose blockquote { border-left: 2px solid var(--pf-accent); padding-left: 1rem; margin: 1.5rem 0; font-style: italic; }
+
+/* ───────── Orientation / device adaptation ───────── */
+/* Stable viewport units: svh does not jump when a phone's address bar hides */
+.pf-journey { height: calc(100svh * (var(--n, 6) * 0.55 + 1)); }
+.pf-journey__stick { height: 100svh; }
+.pf-dive { height: 135svh; }
+.pf-pullback { height: 105svh; }
+.pf-contact { --min: 100svh; }
+.pf-3d .pf-contact { min-height: 100svh; }
+
+/* Type scales with the SHORTER side, so landscape phones don't overflow */
+.pf-hero__name { font-size: clamp(3rem, min(15vw, 30vh), 11rem); }
+.pf-head__num { font-size: clamp(4rem, min(18vw, 30vh), 12rem); }
+.pf-head__title { font-size: clamp(2rem, min(7vw, 11vh), 5rem); }
+.pf-pullback__title { font-size: clamp(3.5rem, min(16vw, 32vh), 13rem); }
+.pf-3d .pf-contact__big { font-size: clamp(2rem, min(6vw, 10vh), 5rem); }
+.pf-journey__list h3 { font-size: clamp(1.25rem, min(3.6vw, 6vh), 2.8rem); }
+
+/* Landscape (incl. phones turned sideways): timeline on the right, camera on the left */
+@media (orientation: landscape) and (min-width: 640px) {
+  .pf-journey__rail { left: 56%; top: 14vh; bottom: 14vh; }
+  .pf-journey__list > li { left: calc(56% + 2rem); right: 3vw; max-width: 34rem; top: 52%; }
+  .pf-journey__head { display: block; top: 5.5rem; }
+  .pf-3d .pf-contact__grid { grid-template-columns: 1fr minmax(10rem, 26vw) 1fr; gap: 1.5rem; align-items: end; }
+  .pf-3d .pf-contact__grid > :nth-child(2) { grid-column: 3; }
+  .pf-3d .pf-contact .pf-wrap { background: none; backdrop-filter: none; padding: 0; }
+  .pf-3d .pf-works .pf-wrap { margin-left: 34vw; width: 62vw; }
+  .pf-3d .pf-works .pf-section:not(.pf-section--gallery) .pf-wrap { background: none; backdrop-filter: none; padding: 0; }
+}
+/* Short landscape screens (phones on their side): tighten everything */
+@media (orientation: landscape) and (max-height: 520px) {
+  .pf-section { padding: 3rem 0; }
+  .pf-nav { padding: 0.35rem 1rem; }
+  .pf-vf { inset: 3.2rem 1rem 1rem; }
+  .pf-hero__inner { padding: 4rem 1rem 3rem; }
+  .pf-hero__tag { margin-top: 0.8rem; font-size: 0.95rem; }
+  .pf-scroll { bottom: 1.6rem; }
+  .pf-journey__list > li { padding: 0.8rem 1rem; }
+  .pf-journey__list ul { font-size: 0.85rem; gap: 0.15rem; }
+  .pf-journey__place { margin-bottom: 0.3rem; }
+  .pf-pullback__text { top: 28vh; }
+  .pf-3d .pf-contact { padding: 3.5rem 0 1.5rem; }
+  .pf-contact__big { margin-bottom: 1rem; }
+  .pf-form { gap: 0.6rem; }
+  .pf-form textarea { rows: 2; max-height: 4rem; }
+  .pf-shutter__btn { width: 3.4rem; height: 3.4rem; }
+  .pf-shutter__btn i { width: 2.4rem; height: 2.4rem; }
+}
+/* Portrait: camera sits in the top half, text cards in the bottom half */
+@media (orientation: portrait) {
+  .pf-journey__list > li { top: auto; bottom: 7svh; transform: translateY(calc((var(--i) + 0.5 - var(--a)) * 120px)); }
+  .pf-journey__rail { top: 10svh; bottom: 7svh; }
+  .pf-dive__text { top: 60svh; }
+  .pf-pullback__text { text-align: left; padding-left: clamp(1rem, 6vw, 3rem); top: 30svh; }
+}
+/* Touch: let the page scroll vertically over the gallery. The dome still rotates with
+   horizontal drags. Scoped to the portfolio page, so the /gallery route is unchanged. */
+@media (pointer: coarse) {
+  .pf-gallery [style*='touch-action'] { touch-action: pan-y !important; }
+}

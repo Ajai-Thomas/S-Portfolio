@@ -136,8 +136,12 @@ export async function createScene({ canvas, lite = false, theme = 'dark', photos
   const tmpA = new THREE.Color(), tmpB = new THREE.Color();
   const camPos = new THREE.Vector3(), tgt = new THREE.Vector3();
 
+  let sizeW = 0, sizeH = 0;
   function resize() {
     const w = window.innerWidth, h = window.innerHeight;
+    // phones fire resize when the address bar hides/shows: ignore small height-only changes
+    if (lite && sizeW === w && Math.abs(sizeH - h) < 160 && sizeH) return;
+    sizeW = w; sizeH = h;
     renderer.setPixelRatio(dpr);
     renderer.setSize(w, h, false);
     composer.setSize(w, h, false);
@@ -147,6 +151,7 @@ export async function createScene({ canvas, lite = false, theme = 'dark', photos
   }
   resize();
   window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', resize);
 
   function frame(now) {
     if (state.covered) { state.last = now; return; } // hidden behind the gallery: skip all work
@@ -175,7 +180,11 @@ export async function createScene({ canvas, lite = false, theme = 'dark', photos
     camera.fov = k.fov;
     // shift the whole image left by a fraction of the width so text can own the right half
     const W = window.innerWidth, H = window.innerHeight;
-    if (k.shift > 0.001) camera.setViewOffset(W, H, k.shift * W, 0, W, H); else camera.clearViewOffset();
+    // landscape: subject slides left (text on the right). portrait: subject slides up (text below).
+    const portrait = aspect < 0.9;
+    const sx = portrait ? 0 : k.shift * W;
+    const sy = portrait ? k.shift * 0.9 * H : 0;
+    if (sx > 0.5 || sy > 0.5) camera.setViewOffset(W, H, sx, sy, W, H); else camera.clearViewOffset();
     camera.updateProjectionMatrix();
 
     // model: keyframed transform + idle float + pointer follow
@@ -250,6 +259,7 @@ export async function createScene({ canvas, lite = false, theme = 'dark', photos
     dispose() {
       stop();
       window.removeEventListener('resize', resize);
+      window.removeEventListener('orientationchange', resize);
       document.removeEventListener('visibilitychange', onVis);
       floaters.dispose();
       built.dispose();

@@ -83,6 +83,7 @@ export function useScrollFlow({ rootRef, enabled, engineRef, entryCount }) {
 
     const onResize = () => { measure(); ScrollTrigger.refresh(); };
     window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
     // Layout shifts (images, fonts) change section heights: re-measure shortly after load
     const t = setTimeout(onResize, 1200);
     window.addEventListener('load', onResize);
@@ -90,6 +91,7 @@ export function useScrollFlow({ rootRef, enabled, engineRef, entryCount }) {
     return () => {
       clearTimeout(t);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
       window.removeEventListener('load', onResize);
       gsap.ticker.remove(push);
       gsap.ticker.remove(raf);
