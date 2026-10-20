@@ -17,6 +17,8 @@ export function Nav({ initials, theme, onToggleTheme }) {
   }, []);
 
   return (
+    <>
+    <span className="pf-nav__edge pf-mono" aria-hidden="true">PHOTOGRAPHY PORTFOLIO — {new Date().getFullYear()}</span>
     <header className="pf-nav">
       <a href="#intro" className="pf-nav__logo" aria-label="Back to top">{initials}</a>
       <nav aria-label="Sections">
@@ -33,6 +35,7 @@ export function Nav({ initials, theme, onToggleTheme }) {
         <span aria-hidden="true">{theme === 'dark' ? '☀' : '☾'}</span>
       </button>
     </header>
+    </>
   );
 }
 
@@ -67,26 +70,27 @@ export function Cursor() {
   );
 }
 
-// Aperture-blade loader. Fades out after `ms`.
-export function ApertureLoader({ ms = 1100 }) {
+// Aperture-blade loader with a real progress percentage. Fades out once `done`.
+export function ApertureLoader({ progress = 0, done = false }) {
   const [gone, setGone] = useState(false);
-  const [fade, setFade] = useState(false);
   useEffect(() => {
-    const a = setTimeout(() => setFade(true), ms);
-    const b = setTimeout(() => setGone(true), ms + 500);
-    return () => { clearTimeout(a); clearTimeout(b); };
-  }, [ms]);
+    if (!done) return;
+    const b = setTimeout(() => setGone(true), 700);
+    return () => clearTimeout(b);
+  }, [done]);
   if (gone) return null;
+  const pct = Math.round((done ? 1 : progress) * 100);
   return (
-    <div className={`pf-loader ${fade ? 'is-out' : ''}`} role="status" aria-label="Loading">
+    <div className={`pf-loader ${done ? 'is-out' : ''}`} role="status" aria-live="polite" aria-label={`Loading ${pct} percent`}>
       <svg viewBox="0 0 100 100" width="96" height="96" aria-hidden="true">
         {[0, 1, 2, 3, 4, 5].map((i) => (
           <g key={i} transform={`rotate(${i * 60} 50 50)`}>
-            <path className="pf-blade" d="M50 50 L50 6 A44 44 0 0 1 88 28 Z" />
+            <path className="pf-blade" d="M50 50 L50 6 A44 44 0 0 1 88 28 Z" style={{ '--open': 1 - pct / 100 }} />
           </g>
         ))}
       </svg>
-      <span className="pf-mono">DEVELOPING…</span>
+      <span className="pf-mono pf-loader__pct">{String(pct).padStart(3, '0')}%</span>
+      <span className="pf-mono pf-muted">DEVELOPING…</span>
     </div>
   );
 }
@@ -141,6 +145,7 @@ export function Modal({ label, onClose, children, className = '' }) {
       <div
         ref={ref}
         className={`pf-modal ${className}`}
+        data-lenis-prevent
         role="dialog"
         aria-modal="true"
         aria-label={label}

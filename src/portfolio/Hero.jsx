@@ -2,9 +2,23 @@ import { useEffect, useRef, useState } from 'react';
 import { reducedMotion } from './util';
 
 const pad = (n) => String(n).padStart(2, '0');
+// Static hero art used when WebGL / motion is unavailable.
+function StaticCamera() {
+  return (
+    <svg className="pf-hero__static" viewBox="0 0 400 260" role="img" aria-label="Illustration of a camera">
+      <rect x="30" y="80" width="340" height="150" rx="16" fill="#151414" />
+      <rect x="30" y="60" width="340" height="40" rx="10" fill="#cfcfd4" />
+      <circle cx="200" cy="155" r="62" fill="#0d0d0e" stroke="#cfcfd4" strokeWidth="8" />
+      <circle cx="200" cy="155" r="38" fill="#1b2a44" />
+      <circle cx="188" cy="143" r="9" fill="#fff" opacity=".5" />
+      <circle cx="320" cy="50" r="12" fill="#c8301f" />
+    </svg>
+  );
+}
+
 const SHUTTER = [30, 60, 125, 250, 500, 1000, 2000, 4000];
 
-export default function Hero({ name, tagline }) {
+export default function Hero({ name, tagline, role, location, fallback }) {
   const root = useRef(null);
   const [flash, setFlash] = useState(false);
   const [frame, setFrame] = useState(1);
@@ -55,9 +69,7 @@ export default function Hero({ name, tagline }) {
 
   return (
     <section id="intro" ref={root} className="pf-hero" aria-label="Introduction">
-      <div className="pf-hero__shapes" aria-hidden="true">
-        <i className="s1" /><i className="s2" /><i className="s3" /><i className="leak" />
-      </div>
+      {fallback && <StaticCamera />}
 
       <div className="pf-hero__inner">
         <h1 className="pf-hero__name" aria-label={name}>
@@ -81,9 +93,9 @@ export default function Hero({ name, tagline }) {
         <span className="c tl" /><span className="c tr" /><span className="c bl" /><span className="c br" />
         <span className="g gv1" /><span className="g gv2" /><span className="g gh1" /><span className="g gh2" />
         <span className="focus"><i /></span>
-        <div className="readout top pf-mono"><span>REC ●</span><span>RAW + JPG</span><span>[ ◉ ] AF-S</span></div>
+        <div className="readout top pf-mono"><span>{location}</span><span>{role}</span><span>FRAME {pad(frame)}/36</span></div>
         <div className="readout bot pf-mono">
-          <span>1/{exp.s}</span><span>F{exp.f.toFixed(1)}</span><span>ISO {exp.iso}</span><span>FRAME {pad(frame)}/36</span>
+          <span>1/{exp.s}</span><span>F{exp.f.toFixed(1)}</span><span>ISO {exp.iso}</span><span>REC ●</span>
         </div>
       </div>
 

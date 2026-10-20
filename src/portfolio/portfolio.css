@@ -27,8 +27,8 @@ html.pf-smooth { scroll-behavior: smooth; scroll-padding-top: 4rem; }
   --pf-accent: #b3331c;
   --pf-glow: rgba(179, 51, 28, 0.25);
 }
+.pf-root.pf-static:not(.pf-modal-wrap) { background: var(--pf-bg); }
 .pf-root:not(.pf-modal-wrap) {
-  background: var(--pf-bg);
   min-height: 100vh;
   position: relative;
   overflow-x: clip;
@@ -289,4 +289,97 @@ html.pf-smooth { scroll-behavior: smooth; scroll-padding-top: 4rem; }
   .pf-mask > span { transform: none; }
   .pf-reveal:not(.pf-mask) { opacity: 1; transform: none; }
   .pf-scroll span { transform: none; }
+}
+
+/* ───────── 3D scene layout ───────── */
+.pf-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+.pf-flow, .pf-footer { position: relative; z-index: 2; }
+.pf-3d .pf-footer { background: color-mix(in srgb, var(--pf-bg) 85%, transparent); }
+.pf-3d .pf-hero__name, .pf-3d .pf-hero__tag, .pf-3d .pf-bio, .pf-3d .pf-contact__big { text-shadow: 0 2px 28px rgba(0, 0, 0, 0.35); }
+.pf-root[data-theme='light'].pf-3d .pf-hero__name, .pf-root[data-theme='light'].pf-3d .pf-hero__tag { text-shadow: 0 2px 24px rgba(255, 255, 255, 0.5); }
+.pf-3d .pf-hero__tag { color: var(--pf-text); opacity: 0; }
+.pf-3d .pf-hero__inner, .pf-3d .pf-vf, .pf-3d .pf-scroll { opacity: var(--hero, 1); will-change: opacity; }
+.pf-3d .pf-hero { background: none; }
+.pf-hero__static { position: absolute; left: 50%; top: 50%; width: min(70vw, 34rem); transform: translate(-50%, -50%); opacity: 0.9; }
+.pf-static .pf-hero { background: linear-gradient(115deg, var(--pf-surface) 50%, var(--pf-bg) 50%); }
+
+.pf-nav__edge { position: fixed; right: 0.9rem; top: 50%; writing-mode: vertical-rl; transform: translateY(-50%) rotate(180deg); color: var(--pf-muted); font-size: 0.6rem; pointer-events: none; display: none; }
+@media (min-width: 900px) { .pf-nav__edge { display: block; } }
+
+.pf-shutterflash { position: fixed; inset: 0; z-index: 95; background: #fff; opacity: 0; pointer-events: none; }
+.pf-shutterflash.is-on { animation: pf-shutter 0.26s ease-out; }
+.pf-loader__pct { font-size: 1.4rem; letter-spacing: 0.2em; }
+.pf-loader .pf-blade { animation-play-state: running; }
+
+/* Dive-in: lens fills the screen, bio fades in at the end */
+.pf-dive { height: 135vh; position: relative; }
+.pf-dive__text { position: sticky; top: 58vh; max-width: 34rem; margin-left: clamp(1rem, 6vw, 5rem); opacity: var(--dive, 0); transform: translateY(calc((1 - var(--dive, 0)) * 30px)); text-shadow: 0 2px 24px rgba(0, 0, 0, 0.55); color: #f4efe7; }
+.pf-dive__bio { font-family: var(--pf-display); font-weight: 300; font-size: clamp(1.1rem, 2.3vw, 1.7rem); line-height: 1.45; margin: 0.8rem 0 0; }
+
+/* Journey / about timeline */
+.pf-journey { position: relative; height: calc(100vh * (var(--n, 6) * 0.55 + 1)); --a: calc(var(--about, 0) * var(--n, 6)); }
+.pf-journey__stick { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+.pf-journey__head { position: absolute; left: clamp(1rem, 5vw, 4rem); top: 6.5rem; color: var(--pf-text); }
+.pf-journey__head h2 { font-family: var(--pf-display); font-weight: 300; font-size: clamp(2.4rem, 7vw, 5.5rem); margin: 0.3rem 0 0; line-height: 1; letter-spacing: -0.02em; }
+.pf-journey__rail { position: absolute; left: 1.4rem; top: 16vh; bottom: 10vh; width: 1px; background: var(--pf-line); }
+.pf-journey__fill { position: absolute; inset: 0; background: var(--pf-accent); transform-origin: top; transform: scaleY(var(--about, 0)); }
+.pf-journey__list > li {
+  position: absolute; left: 3.4rem; right: 1rem; top: 54%; padding: 1.2rem 1.4rem; border-radius: 8px;
+  background: color-mix(in srgb, var(--pf-bg) 78%, transparent); backdrop-filter: blur(8px);
+  transform: translateY(calc(-50% + (var(--i) + 0.5 - var(--a)) * 140px));
+  opacity: clamp(0, calc(1 - abs(var(--a) - 0.5 - var(--i)) * 2.6), 1);
+  pointer-events: none;
+}
+.pf-journey__dot { position: absolute; left: calc(-2rem - 4px); top: 1.7rem; width: 9px; height: 9px; border-radius: 50%; background: var(--pf-accent); box-shadow: 0 0 0 5px var(--pf-glow); }
+.pf-journey__list h3 { font-family: var(--pf-display); font-weight: 400; font-size: clamp(1.5rem, 3.6vw, 2.8rem); line-height: 1.1; margin: 0.4rem 0; }
+.pf-journey__range { color: var(--pf-accent); margin: 0; }
+.pf-journey__place { margin: 0 0 0.6rem; }
+.pf-journey__list ul { display: grid; gap: 0.3rem; font-size: 1rem; }
+.pf-journey__list ul li::before { content: '— '; color: var(--pf-accent); }
+@media (min-width: 900px) {
+  .pf-journey__rail { left: 56%; top: 14vh; bottom: 14vh; }
+  .pf-journey__list > li { left: calc(56% + 2.4rem); right: 5vw; max-width: 34rem; }
+  .pf-journey__head { top: 7rem; }
+}
+@media (max-width: 899px) { .pf-journey__head { display: none; } }
+
+/* Pull-back title */
+.pf-pullback { height: 105vh; position: relative; }
+.pf-pullback__text { position: sticky; top: 36vh; text-align: right; padding-right: clamp(1rem, 6vw, 6rem); }
+.pf-pullback__title { font-family: var(--pf-display); font-weight: 300; font-size: clamp(4rem, 16vw, 13rem); line-height: 0.95; margin: 0; letter-spacing: -0.04em; }
+
+/* Works: leave the left side for the parked camera on wide screens */
+@media (min-width: 1000px) {
+  .pf-3d .pf-works .pf-wrap { margin-left: 30vw; width: min(66vw, 62rem); }
+}
+@media (max-width: 999px) {
+  .pf-3d .pf-works .pf-section:not(.pf-section--gallery) .pf-wrap { background: color-mix(in srgb, var(--pf-bg) 82%, transparent); backdrop-filter: blur(6px); padding: 1.2rem; border-radius: 8px; }
+}
+.pf-3d .pf-section--gallery .pf-head { background: none; }
+
+/* Static fallback (no WebGL / reduced motion): normal stacked sections */
+.pf-static .pf-dive { height: auto; padding: 4rem 0 2rem; }
+.pf-static .pf-dive__text { position: static; opacity: 1; transform: none; color: var(--pf-text); text-shadow: none; }
+.pf-static .pf-journey { height: auto; padding: 4rem 0; }
+.pf-static .pf-journey__stick { position: static; height: auto; overflow: visible; padding: 0 clamp(1rem, 5vw, 4rem); }
+.pf-static .pf-journey__head { position: static; margin-bottom: 2rem; display: block; }
+.pf-static .pf-journey__rail { display: none; }
+.pf-static .pf-journey__list { display: grid; gap: 1.5rem; }
+.pf-static .pf-journey__list > li { position: static; transform: none; opacity: 1; max-width: 40rem; background: var(--pf-surface); }
+.pf-static .pf-journey__dot { display: none; }
+.pf-static .pf-pullback { height: auto; padding: 4rem 0 0; }
+.pf-static .pf-pullback__text { position: static; }
+.pf-static .pf-hero__tag { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) { .pf-canvas { display: none; } }
+
+/* Contact over the 3D scene: leave the centre column for the camera */
+.pf-3d .pf-contact { min-height: 100vh; display: grid; align-content: center; }
+.pf-3d .pf-contact__big { font-size: clamp(2.2rem, 6vw, 5rem); text-align: center; margin-bottom: 2rem; }
+@media (min-width: 1000px) {
+  .pf-3d .pf-contact__grid { grid-template-columns: 1fr minmax(14rem, 26vw) 1fr; gap: 2rem; align-items: end; }
+  .pf-3d .pf-contact__grid > :nth-child(2) { grid-column: 3; }
+}
+@media (max-width: 999px) {
+  .pf-3d .pf-contact .pf-wrap { background: color-mix(in srgb, var(--pf-bg) 70%, transparent); backdrop-filter: blur(6px); padding: 1.2rem; border-radius: 8px; }
 }
