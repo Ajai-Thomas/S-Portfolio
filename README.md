@@ -92,13 +92,7 @@ The home page is a single scrolling photography portfolio in `src/portfolio/`. E
 - **Name / tagline / initials:** `site`.
 - **About:** `about.bio` (array of paragraphs), `about.portrait`, `about.timeline` (`year`, `type`, `title`, `place`), `about.gear` (categories of `{ name, spec }`).
 - **Albums:** add an object to `albums`: `id`, `title`, `year`, `description`, `cover`, and `photos`. Photo shape: `{ "src": "/photos/a.webp", "srcset": "/photos/a-800.webp 800w, /photos/a-1600.webp 1600w", "full": "/photos/a-2400.webp", "alt": "...", "caption": "...", "w": 1600, "h": 1067 }`. The photo count on the card is computed. Put image files in `public/` (e.g. `public/photos/`). `w`/`h` prevent layout shift.
-- **Videos:** add to `videos`: `{ "id", "title", "duration": "01:24", "thumb": {src, alt}, "type": "youtube", "id2" }` where type is one of
-  - `youtube` → add `"id": "VIDEO_ID"` (rename the card key, see below)
-  - `vimeo` → `"id": "VIDEO_ID"`
-  - `mp4` → `"src": "/videos/clip.mp4"`
-  - `placeholder` → shows a placeholder message.
-
-  Note: each video needs a unique card key, so use `"id"` for the YouTube/Vimeo video id and keep titles unique.
+- **Videos:** add to `videos`: `{ "id", "title", "duration": "01:24", "thumb": { "src", "alt" }, "type" }`. `type` is one of `youtube` (`id` is the YouTube video id), `vimeo` (`id` is the Vimeo id), `mp4` (add `"src": "/videos/clip.mp4"`; `id` is any unique string) or `placeholder`. Each `id` must be unique.
 - **Contact:** `contact.email`, `contact.heading`, `contact.subheading`, `contact.socials` (`label`, `url`). The form opens the visitor's mail client (no backend).
 - **Gallery:** the "01 Gallery" section is the original `GalleryPage` / `DomeGallery`, fed by Sanity exactly as before. It is not driven by `content.json`.
 - Other routes (`/about`, `/blog`, `/gallery`, `/admin`, …) are unchanged.
