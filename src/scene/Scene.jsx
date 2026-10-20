@@ -8,7 +8,7 @@ function hasWebGL() {
   } catch { return false; }
 }
 
-export default function Scene({ theme, photos, engineRef, onProgress, onReady, onFallback }) {
+export default function Scene({ theme, photos, engineRef, onProgress, onReady, onFallback, onShutter }) {
   const canvas = useRef(null);
   const themeRef = useRef(theme);
   themeRef.current = theme;
@@ -22,10 +22,12 @@ export default function Scene({ theme, photos, engineRef, onProgress, onReady, o
     const boot = async () => {
       try {
         const { createScene } = await import('./engine');
-        const e = await createScene({ canvas: canvas.current, lite, theme: themeRef.current, photos, onProgress });
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const e = await createScene({ canvas: canvas.current, lite, reduced, theme: themeRef.current, photos, onProgress, onShutter });
         if (cancelled) { e.dispose(); return; }
         engine = e;
         engineRef.current = e;
+        if (new URLSearchParams(window.location.search).get('debug') === '1') window.__pfEngine = e;
         e.start();
         onReady(e);
       } catch (err) {

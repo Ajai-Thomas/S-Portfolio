@@ -76,7 +76,10 @@
         ]
       }
     ],
-    "floaterPhotos": []
+    "floaterPhotos": [],
+    "skills": {
+      "_help": "Override the label shown for each camera part in the exploded view. Keys are part names: sensor, mirror_box, lens_mount, lens_barrel_outer, focus_ring, lens_element_4, lens_element_3, aperture_blades, lens_element_2, zoom_ring, lens_element_1."
+    }
   },
   "albums": [
     {

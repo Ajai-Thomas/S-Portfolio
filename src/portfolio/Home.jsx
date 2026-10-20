@@ -14,6 +14,9 @@ import Contact from './Contact';
 import Blog from './Blog';
 import { useSanityPortfolio } from './sanityContent';
 import GalleryPage from '../components/GalleryPage';
+import Annotations from './Annotations';
+import Scrubber from './Scrubber';
+import DebugTools from './DebugTools';
 import { useScrollFlow } from '../scene/useScrollFlow';
 
 const Scene = lazy(() => import('../scene/Scene'));
@@ -28,7 +31,10 @@ export default function Home({ galleryImages }) {
   const engineRef = useRef(null);
   const [theme, setTheme] = useState(getInitialTheme);
   // 'loading' → 'ready' (3D running) or 'static' (reduced motion / no WebGL / error)
-  const [mode, setMode] = useState(() => (reducedMotion() ? 'static' : 'loading'));
+  const [mode, setMode] = useState('loading');
+  const reduced = reducedMotion();
+  const debug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
+  const flowRef = useRef(null);
   const [progress, setProgress] = useState(0);
   const [flash, setFlash] = useState(false);
   const nearGallery = useNear(galleryBox);
@@ -39,7 +45,7 @@ export default function Home({ galleryImages }) {
   const is3d = mode !== 'static';
 
   useReveal(root);
-  useScrollFlow({ rootRef: root, enabled: is3d, engineRef, entryCount: content.about.timeline.length });
+  useScrollFlow({ rootRef: root, enabled: is3d, engineRef, flowRef, entryCount: content.about.timeline.length, reduced });
 
   useEffect(() => {
     document.documentElement.classList.add('pf-smooth');
@@ -85,19 +91,28 @@ export default function Home({ galleryImages }) {
             onProgress={setProgress}
             onReady={() => setMode('ready')}
             onFallback={onFallback}
+            onShutter={shutter}
           />
         </Suspense>
       )}
+      {mode === 'ready' && <Annotations engineRef={engineRef} ready skills={content.about.skills} />}
+      {is3d && <Scrubber flowRef={flowRef} rootRef={root} />}
+      {debug && <DebugTools engineRef={engineRef} ready={mode === 'ready'} />}
       <div className={`pf-shutterflash ${flash ? 'is-on' : ''}`} aria-hidden="true" />
 
       <main className="pf-flow">
         <Hero name={content.site.name} tagline={content.site.tagline} role={content.site.role} location={content.site.location} fallback={!is3d} />
 
-        <section id="dive" className="pf-dive" aria-label="Introduction">
-          <div className="pf-dive__text">
-            <p className="pf-mono">THROUGH THE LENS</p>
-            {content.about.bio.map((p, i) => <p key={i} className="pf-dive__bio">{p}</p>)}
-          </div>
+        {/* Scroll space for the camera sequence; the 3D scene does the work. */}
+        <section id="tilt" className="pf-spacer pf-spacer--tilt" aria-hidden="true" />
+        <section id="break" className="pf-spacer pf-spacer--break" aria-hidden="true">
+          <p className="pf-phase pf-mono pf-reveal">01 · DISASSEMBLY</p>
+        </section>
+        <section id="explode" className="pf-spacer pf-spacer--explode" aria-hidden="true">
+          <p className="pf-phase pf-mono pf-reveal">02 · OPTICAL AXIS, EXPLODED</p>
+        </section>
+        <section id="annotate" className="pf-spacer pf-spacer--annotate" aria-hidden="true">
+          <p className="pf-phase pf-mono pf-reveal">03 · WHAT I DO</p>
         </section>
 
         <Journey about={content.about} />

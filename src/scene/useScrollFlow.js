@@ -3,32 +3,40 @@ import { useEffect } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SECTION_WEIGHTS } from './config';
+import { at, SECTION_WEIGHTS } from './explodeConfig';
 
 gsap.registerPlugin(ScrollTrigger);
 
 // DOM ids in page order, paired with their weight key in SECTION_WEIGHTS.
 const ORDER = [
   ['intro', 'hero'],
-  ['dive', 'dive'],
+  ['tilt', 'tilt'],
+  ['break', 'break'],
+  ['explode', 'explode'],
+  ['annotate', 'annotate'],
   ['about', 'about'],
   ['pullback', 'pullback'],
   ['works', 'works'],
   ['contact', 'contact'],
 ];
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+// The scrubber covers the break-apart sequence only (tilt → end of reassemble).
+const SEQ0 = at('tilt', 0);
+const SEQ1 = at('pullback', 1);
 
 /**
- * @param rootRef   page root (receives --hero, --dive, --about CSS vars)
+ * @param rootRef   page root (receives --hero, --about, --seq, --seqshow CSS vars)
  * @param enabled   false → no Lenis, no scrubbing (static fallback)
- * @param engineRef ref holding the scene engine (setProgress / setEra)
+ * @param engineRef ref holding the scene engine (setProgress / setEra / setCovered)
+ * @param flowRef   receives { scrubTo(frac, immediate) } for the scrubber UI
  * @param entryCount number of journey entries (maps to the 0–4 "era" used by floaters)
+ * @param reduced   prefers-reduced-motion: no wheel smoothing
  */
-export function useScrollFlow({ rootRef, enabled, engineRef, entryCount }) {
+export function useScrollFlow({ rootRef, enabled, engineRef, flowRef, entryCount, reduced }) {
   useEffect(() => {
     if (!enabled) return;
     const root = rootRef.current;
-    const lenis = new Lenis({ lerp: 0.085, smoothWheel: true, wheelMultiplier: 0.95 });
+    const lenis = new Lenis({ lerp: 0.1, smoothWheel: !reduced, wheelMultiplier: 0.95 });
     lenis.on('scroll', ScrollTrigger.update);
     const raf = (t) => lenis.raf(t * 1000);
     gsap.ticker.add(raf);
@@ -67,19 +75,44 @@ export function useScrollFlow({ rootRef, enabled, engineRef, entryCount }) {
       engineRef.current?.setCovered(!!g && g.top <= 1 && g.bottom >= vh - 1);
       root.style.setProperty('--hero', clamp(1 - y / (vh * 0.65)).toFixed(3));
       root.style.setProperty('--about', aboutLocal.toFixed(4));
-      root.style.setProperty('--dive', clamp((y - vh * 0.5) / (vh * 1.2)).toFixed(3));
+      // scrubber: playhead position and visibility (hidden in Works)
+      root.style.setProperty('--seq', clamp((p - SEQ0) / (SEQ1 - SEQ0)).toFixed(4));
+      const show = clamp((p - at('hero', 0.8)) / 0.01) * (1 - clamp((p - at('pullback', 0.85)) / 0.02));
+      root.style.setProperty('--seqshow', show.toFixed(3));
+      root.dataset.seq = show > 0.5 ? 'on' : 'off';
       const era = clamp(aboutLocal * entryCount - 0.5, 0, entryCount - 1) * (4 / Math.max(1, entryCount - 1));
-      // GSAP scrubs the master timeline value toward the scroll-derived target
-      gsap.to(proxy, { p, era, duration: 0.45, ease: 'power2.out', overwrite: true });
+      gsap.to(proxy, { p, era, duration: 0.3, ease: 'power2.out', overwrite: true });
     };
     const st = ScrollTrigger.create({ start: 0, end: 'max', onUpdate: compute, onRefresh: () => { measure(); compute(); } });
     compute();
 
     const push = () => {
       const e = engineRef.current;
-      if (e) { e.setProgress(proxy.p); e.setEra(proxy.era); }
+      if (!e) return;
+      const o = window.__pfProgress; // debug slider override
+      e.setProgress(typeof o === 'number' ? o : proxy.p);
+      e.setEra(proxy.era);
     };
     gsap.ticker.add(push);
+
+    // master progress → scroll position (inverse of `compute`), used by the scrubber
+    const pToY = (p) => {
+      let cum = 0;
+      for (const a of anchors) {
+        const w = SECTION_WEIGHTS[a.key];
+        if (p <= cum + w + 1e-9 || a === anchors[anchors.length - 1]) return a.top + clamp((p - cum) / w) * (a.end - a.top);
+        cum += w;
+      }
+      return 0;
+    };
+    if (flowRef) {
+      flowRef.current = {
+        scrubTo: (frac, immediate = false) => {
+          const p = SEQ0 + clamp(frac) * (SEQ1 - SEQ0);
+          lenis.scrollTo(pToY(p), immediate ? { immediate: true, force: true } : { duration: 1.2 });
+        },
+      };
+    }
 
     const onResize = () => { measure(); ScrollTrigger.refresh(); };
     window.addEventListener('resize', onResize);
@@ -95,8 +128,9 @@ export function useScrollFlow({ rootRef, enabled, engineRef, entryCount }) {
       window.removeEventListener('load', onResize);
       gsap.ticker.remove(push);
       gsap.ticker.remove(raf);
+      if (flowRef) flowRef.current = null;
       st.kill();
       lenis.destroy();
     };
-  }, [rootRef, enabled, engineRef, entryCount]);
+  }, [rootRef, enabled, engineRef, flowRef, entryCount, reduced]);
 }

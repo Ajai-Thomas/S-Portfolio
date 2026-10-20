@@ -8,6 +8,7 @@ export default function Journey({ about }) {
         <header className="pf-journey__head">
           <p className="pf-mono">THE JOURNEY</p>
           <h2 id="about-title">{about.heading}</h2>
+          <div className="pf-journey__bio">{about.bio.map((p, i) => <p key={i}>{p}</p>)}</div>
         </header>
 
         <div className="pf-journey__rail" aria-hidden="true">
