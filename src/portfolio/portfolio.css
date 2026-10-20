@@ -350,7 +350,7 @@ html.pf-smooth { scroll-behavior: smooth; scroll-padding-top: 4rem; }
 
 /* Works: leave the left side for the parked camera on wide screens */
 @media (min-width: 1000px) {
-  .pf-3d .pf-works .pf-wrap { margin-left: 30vw; width: min(66vw, 62rem); }
+  .pf-3d .pf-works .pf-wrap { margin-left: 34vw; width: min(62vw, 62rem); }
 }
 @media (max-width: 999px) {
   .pf-3d .pf-works .pf-section:not(.pf-section--gallery) .pf-wrap { background: color-mix(in srgb, var(--pf-bg) 82%, transparent); backdrop-filter: blur(6px); padding: 1.2rem; border-radius: 8px; }

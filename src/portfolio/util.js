@@ -38,22 +38,28 @@ export function resolveAlbum(album, index) {
 }
 
 // Reveals `.pf-reveal` elements inside root when they scroll into view.
+// Also picks up elements added later (e.g. albums/posts loaded from Sanity).
 export function useReveal(rootRef) {
   useEffect(() => {
-    const els = rootRef.current?.querySelectorAll('.pf-reveal');
-    if (!els) return;
-    if (reducedMotion() || !('IntersectionObserver' in window)) {
-      els.forEach((el) => el.classList.add('is-in'));
-      return;
-    }
-    const io = new IntersectionObserver(
+    const root = rootRef.current;
+    if (!root) return;
+    const instant = reducedMotion() || !('IntersectionObserver' in window);
+    const io = instant ? null : new IntersectionObserver(
       (entries) => entries.forEach((e) => {
         if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
       }),
       { threshold: 0.15, rootMargin: '0px 0px -8% 0px' }
     );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
+    const seen = new WeakSet();
+    const scan = () => root.querySelectorAll('.pf-reveal').forEach((el) => {
+      if (seen.has(el)) return;
+      seen.add(el);
+      if (io) io.observe(el); else el.classList.add('is-in');
+    });
+    scan();
+    const mo = new MutationObserver(scan);
+    mo.observe(root, { childList: true, subtree: true });
+    return () => { mo.disconnect(); io?.disconnect(); };
   }, [rootRef]);
 }
 
