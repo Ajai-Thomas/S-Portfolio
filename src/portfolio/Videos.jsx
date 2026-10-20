@@ -10,7 +10,7 @@ const timecode = (s, frames = 0) => {
 
 function Player({ v }) {
   if (v.type === 'youtube') {
-    return <iframe title={v.title} src={`https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&rel=0`} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />;
+    return <iframe title={v.title} src={`https://www.youtube-nocookie.com/embed/${v.vid || v.id}?autoplay=1&rel=0`} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />;
   }
   if (v.type === 'vimeo') {
     return <iframe title={v.title} src={`https://player.vimeo.com/video/${v.id}?autoplay=1`} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />;
@@ -27,7 +27,7 @@ function Player({ v }) {
 }
 
 function Card({ v, i, onOpen }) {
-  const total = toSeconds(v.duration);
+  const total = toSeconds(v.duration) || 60;
   const setHead = (e) => {
     const r = e.currentTarget.getBoundingClientRect();
     const p = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
@@ -36,7 +36,7 @@ function Card({ v, i, onOpen }) {
   };
   return (
     <li className="pf-reveal" style={{ '--d': `${i * 90}ms` }}>
-      <button className="pf-vcard" onClick={() => onOpen(v)} onPointerMove={setHead} aria-label={`Play ${v.title}, ${v.duration}`}>
+      <button className="pf-vcard" onClick={() => onOpen(v)} onPointerMove={setHead} aria-label={`Play ${v.title}`}>
         <span className="pf-vcard__thumb">
           <Img photo={v.thumb} seed={20 + i} w={1280} h={720} sizes="(min-width: 900px) 30vw, 90vw" />
           <span className="pf-vcard__play" aria-hidden="true" />
@@ -48,7 +48,7 @@ function Card({ v, i, onOpen }) {
         </span>
         <span className="pf-vcard__meta">
           <strong>{v.title}</strong>
-          <span className="pf-mono">{v.duration} · V{i + 1}</span>
+          <span className="pf-mono">{v.duration ? `${v.duration} · ` : ''}V{i + 1}</span>
         </span>
       </button>
     </li>
@@ -70,7 +70,7 @@ export default function Videos({ videos }) {
         <Modal label={`Video: ${active.title}`} onClose={() => setActive(null)} className="pf-videomodal">
           <button className="pf-x" data-autofocus onClick={() => setActive(null)} aria-label="Close video">×</button>
           <div className="pf-videomodal__box"><Player v={active} /></div>
-          <p className="pf-mono pf-videomodal__cap">{active.title} · {active.duration}</p>
+          <p className="pf-mono pf-videomodal__cap">{active.title}{active.duration ? ` · ${active.duration}` : ''}</p>
         </Modal>
       )}
     </section>

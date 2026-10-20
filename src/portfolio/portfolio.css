@@ -383,3 +383,21 @@ html.pf-smooth { scroll-behavior: smooth; scroll-padding-top: 4rem; }
 @media (max-width: 999px) {
   .pf-3d .pf-contact .pf-wrap { background: color-mix(in srgb, var(--pf-bg) 70%, transparent); backdrop-filter: blur(6px); padding: 1.2rem; border-radius: 8px; }
 }
+
+/* Diary (blog) */
+.pf-posts { display: grid; gap: 0; max-width: 52rem; }
+.pf-post { display: grid; gap: 0.5rem; width: 100%; text-align: left; padding: 1.6rem 0; border-top: 1px solid var(--pf-line); }
+.pf-posts li:last-child .pf-post { border-bottom: 1px solid var(--pf-line); }
+.pf-post strong { font-family: var(--pf-display); font-weight: 400; font-size: clamp(1.6rem, 4vw, 2.6rem); line-height: 1.1; transition: color 0.2s; }
+.pf-post:hover strong, .pf-post:focus-visible strong { color: var(--pf-accent); }
+.pf-post__date, .pf-post__more { color: var(--pf-muted); }
+.pf-post__more { color: var(--pf-accent); }
+.pf-postview { padding-inline: clamp(1rem, 5vw, 4rem); }
+.pf-postview__body { max-width: 44rem; margin: 0 auto; padding-bottom: 4rem; }
+.pf-postview__body h3 { font-family: var(--pf-display); font-weight: 300; font-size: clamp(2rem, 6vw, 3.6rem); line-height: 1.05; margin: 0.4rem 0 2rem; }
+.pf-prose { font-size: 1.1rem; line-height: 1.75; }
+.pf-prose p { margin: 0 0 1.2rem; }
+.pf-prose h1, .pf-prose h2, .pf-prose h3 { font-family: var(--pf-display); font-weight: 400; margin: 2rem 0 0.8rem; }
+.pf-prose a { color: var(--pf-accent); text-decoration: underline; }
+.pf-prose ul, .pf-prose ol { list-style: revert; padding-left: 1.4rem; margin-bottom: 1.2rem; }
+.pf-prose blockquote { border-left: 2px solid var(--pf-accent); padding-left: 1rem; margin: 1.5rem 0; font-style: italic; }

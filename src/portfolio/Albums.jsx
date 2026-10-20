@@ -77,7 +77,7 @@ export default function Albums({ albums }) {
               <button className="pf-sleeve" onClick={() => setActive(a)} aria-label={`Open album ${a.title}, ${a.year}, ${a.photos.length} photos`}>
                 <span className="pf-sleeve__holes" aria-hidden="true" />
                 <span className="pf-sleeve__frame">
-                  <span className="pf-sleeve__back"><Img photo={a.photos[1]} seed={a.seed * 10 + 1} w={640} h={800} sizes="(min-width: 900px) 30vw, 85vw" /></span>
+                  <span className="pf-sleeve__back"><Img photo={a.photos[1] || a.photos[0]} seed={a.seed * 10 + 1} w={640} h={800} sizes="(min-width: 900px) 30vw, 85vw" /></span>
                   <span className="pf-sleeve__cover">
                     <Img photo={a.cover} seed={a.seed} w={640} h={800} sizes="(min-width: 900px) 30vw, 85vw" />
                   </span>

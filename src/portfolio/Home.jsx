@@ -11,6 +11,8 @@ import Journey from './Journey';
 import Albums from './Albums';
 import Videos from './Videos';
 import Contact from './Contact';
+import Blog from './Blog';
+import { useSanityPortfolio } from './sanityContent';
 import GalleryPage from '../components/GalleryPage';
 import { useScrollFlow } from '../scene/useScrollFlow';
 
@@ -30,7 +32,10 @@ export default function Home({ galleryImages }) {
   const [progress, setProgress] = useState(0);
   const [flash, setFlash] = useState(false);
   const nearGallery = useNear(galleryBox);
-  const albums = content.albums.map(resolveAlbum);
+  const sanity = useSanityPortfolio();
+  // Albums/videos come from Sanity; content.json is the placeholder fallback.
+  const albums = (sanity.albums.length ? sanity.albums : sanity.loaded ? content.albums : []).map(resolveAlbum);
+  const videos = sanity.videos.length ? sanity.videos : content.videos;
   const is3d = mode !== 'static';
 
   useReveal(root);
@@ -54,7 +59,7 @@ export default function Home({ galleryImages }) {
   // Shutter click when arriving at each Works section and at Contact.
   useEffect(() => {
     if (!is3d || mode !== 'ready') return;
-    const ids = ['gallery', 'albums', 'video', 'contact'];
+    const ids = ['gallery', 'albums', 'video', 'blog', 'contact'];
     const seen = new Set();
     const io = new IntersectionObserver((entries) => entries.forEach((e) => {
       if (e.isIntersecting && !seen.has(e.target.id)) { seen.add(e.target.id); shutter(); }
@@ -119,7 +124,9 @@ export default function Home({ galleryImages }) {
           <FilmStrip frame={3} />
           <Albums albums={albums} />
           <FilmStrip frame={4} />
-          <Videos videos={content.videos} />
+          <Videos videos={videos} />
+          <FilmStrip frame={5} />
+          <Blog posts={sanity.posts} loaded={sanity.loaded} />
         </div>
 
         <Contact contact={content.contact} />

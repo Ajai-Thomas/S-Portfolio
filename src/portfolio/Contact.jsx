@@ -15,7 +15,7 @@ export default function Contact({ contact }) {
   return (
     <section id="contact" className="pf-section pf-contact" aria-labelledby="contact-title">
       <div className="pf-wrap">
-        <SectionHead n={4} title="Contact" kicker="BOOK" />
+        <SectionHead n={5} title="Contact" kicker="BOOK" />
         <h2 id="contact-title" className="pf-contact__big pf-reveal">
           {contact.heading}<br /><em>{contact.subheading}</em>
         </h2>

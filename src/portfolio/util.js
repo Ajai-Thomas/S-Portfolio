@@ -7,6 +7,7 @@ export const SECTIONS = [
   { id: 'gallery', label: 'Gallery' },
   { id: 'albums', label: 'Albums' },
   { id: 'video', label: 'Video' },
+  { id: 'blog', label: 'Diary' },
   { id: 'contact', label: 'Contact' },
 ];
 

@@ -1,6 +1,5 @@
 // Page chrome: nav, cursor, loader, film strip, section heading, modal.
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { SECTIONS, finePointer, reducedMotion } from './util';
 
@@ -28,7 +27,6 @@ export function Nav({ initials, theme, onToggleTheme }) {
               <a href={`#${s.id}`} aria-current={active === s.id ? 'true' : undefined}>{s.label}</a>
             </li>
           ))}
-          <li><Link to="/blog">Blog</Link></li>
         </ul>
       </nav>
       <button className="pf-nav__theme" onClick={onToggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
@@ -108,7 +106,7 @@ export function FilmStrip({ frame = 1 }) {
   );
 }
 
-export function SectionHead({ n, total = 4, title, kicker }) {
+export function SectionHead({ n, total = 5, title, kicker }) {
   const num = String(n).padStart(2, '0');
   return (
     <div className="pf-head">
