@@ -1,0 +1,59 @@
+{
+  "_help": "Edit this file to change the portfolio page. Anything with src:null shows a clearly labelled PLACEHOLDER image. Photo objects: { src, srcset?, sizes?, full?, alt, caption?, w?, h? }. Video types: youtube (id), vimeo (id), mp4 (src), placeholder. See README 'Portfolio page' section.",
+  "site": {
+    "name": "YOUR NAME",
+    "initials": "A.T.",
+    "tagline": "I Don't Take Shots Anymore. I Take My Time To Observe And Then Capture.",
+    "location": "Your City, Country"
+  },
+  "about": {
+    "heading": "About",
+    "bio": [
+      "PLACEHOLDER BIO — replace this with two or three sentences about who you are and what you photograph.",
+      "Add a second paragraph about your approach, the stories you chase, and who you like to work with."
+    ],
+    "portrait": { "src": null, "alt": "Portrait of the photographer (placeholder)" },
+    "timeline": [
+      { "year": "2025", "type": "Award", "title": "Award or recognition title", "place": "Organisation / Competition" },
+      { "year": "2024", "type": "Exhibition", "title": "Exhibition title", "place": "Gallery, City" },
+      { "year": "2022", "type": "Experience", "title": "Role or commission", "place": "Studio / Client" },
+      { "year": "2019", "type": "Experience", "title": "Where it started", "place": "Freelance" }
+    ],
+    "gear": [
+      { "category": "Camera bodies", "items": [
+        { "name": "Camera body A", "spec": "Full-frame · 45 MP" },
+        { "name": "Camera body B", "spec": "Mirrorless · 24 MP" }
+      ] },
+      { "category": "Lenses", "items": [
+        { "name": "35mm prime", "spec": "f/1.4" },
+        { "name": "85mm prime", "spec": "f/1.8" },
+        { "name": "24–70mm zoom", "spec": "f/2.8" }
+      ] },
+      { "category": "Editing", "items": [
+        { "name": "Lightroom", "spec": "Colour & grade" },
+        { "name": "Photoshop", "spec": "Retouching" },
+        { "name": "DaVinci Resolve", "spec": "Video edits" }
+      ] }
+    ]
+  },
+  "albums": [
+    { "id": "series-one", "title": "Series One", "year": "2025", "description": "PLACEHOLDER album — add a one-line description.", "cover": { "src": null, "alt": "Series One cover (placeholder)" }, "placeholders": 8, "photos": [] },
+    { "id": "series-two", "title": "Series Two", "year": "2024", "description": "PLACEHOLDER album — add a one-line description.", "cover": { "src": null, "alt": "Series Two cover (placeholder)" }, "placeholders": 6, "photos": [] },
+    { "id": "series-three", "title": "Series Three", "year": "2023", "description": "PLACEHOLDER album — add a one-line description.", "cover": { "src": null, "alt": "Series Three cover (placeholder)" }, "placeholders": 10, "photos": [] }
+  ],
+  "videos": [
+    { "id": "v1", "title": "Video edit one", "duration": "01:24", "type": "placeholder", "thumb": null },
+    { "id": "v2", "title": "Video edit two", "duration": "00:58", "type": "placeholder", "thumb": null },
+    { "id": "v3", "title": "Video edit three", "duration": "02:10", "type": "placeholder", "thumb": null }
+  ],
+  "contact": {
+    "heading": "Let's work together",
+    "subheading": "Book a shoot",
+    "email": "hello@example.com",
+    "socials": [
+      { "label": "Instagram", "url": "https://instagram.com/" },
+      { "label": "Behance", "url": "https://behance.net/" },
+      { "label": "YouTube", "url": "https://youtube.com/" }
+    ]
+  }
+}
