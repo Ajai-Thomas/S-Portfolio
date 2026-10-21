@@ -36,7 +36,6 @@ export default function Home({ galleryImages }) {
   const debug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
   const flowRef = useRef(null);
   const [progress, setProgress] = useState(0);
-  const [flash, setFlash] = useState(false);
   const nearGallery = useNear(galleryBox);
   const sanity = useSanityPortfolio();
   // Albums/videos come from Sanity; content.json is the placeholder fallback.
@@ -63,24 +62,6 @@ export default function Home({ galleryImages }) {
     try { localStorage.setItem('pf-theme', theme); } catch { /* ignore */ }
   }, [theme]);
 
-  const shutter = useCallback(() => {
-    engineRef.current?.pulse();
-    setFlash(true);
-    setTimeout(() => setFlash(false), 260);
-  }, []);
-
-  // Shutter click when arriving at each Works section and at Contact.
-  useEffect(() => {
-    if (!is3d || mode !== 'ready') return;
-    const ids = ['gallery', 'albums', 'video', 'blog', 'contact'];
-    const seen = new Set();
-    const io = new IntersectionObserver((entries) => entries.forEach((e) => {
-      if (e.isIntersecting && !seen.has(e.target.id)) { seen.add(e.target.id); shutter(); }
-    }), { threshold: 0.35 });
-    ids.forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
-    return () => io.disconnect();
-  }, [is3d, mode, shutter]);
-
   const onFallback = useCallback(() => setMode('static'), []);
 
   return (
@@ -98,14 +79,12 @@ export default function Home({ galleryImages }) {
             onProgress={setProgress}
             onReady={() => setMode('ready')}
             onFallback={onFallback}
-            onShutter={shutter}
           />
         </Suspense>
       )}
       {mode === 'ready' && <Annotations engineRef={engineRef} ready skills={content.about.skills} />}
       {is3d && <Scrubber flowRef={flowRef} rootRef={root} />}
       {debug && <DebugTools engineRef={engineRef} ready={mode === 'ready'} />}
-      <div className={`pf-shutterflash ${flash ? 'is-on' : ''}`} aria-hidden="true" />
 
       <main className="pf-flow">
         <Hero name={content.site.name} tagline={content.site.tagline} role={content.site.role} location={content.site.location} fallback={!is3d} />

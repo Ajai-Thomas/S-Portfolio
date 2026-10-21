@@ -55,7 +55,6 @@ export function useScrollFlow({ rootRef, enabled, engineRef, flowRef, entryCount
     };
     measure();
 
-    const galleryEl = root.querySelector('.pf-gallery');
     const proxy = { p: 0, era: 0 };
     const compute = () => {
       const y = window.scrollY;
@@ -70,9 +69,6 @@ export function useScrollFlow({ rootRef, enabled, engineRef, flowRef, entryCount
         if (y < a.end || a === anchors[anchors.length - 1]) { p = cum + local * w; break; }
         cum += w;
       }
-      // The gallery is opaque: while it fills the screen, stop drawing the scene behind it.
-      const g = galleryEl && galleryEl.getBoundingClientRect();
-      engineRef.current?.setCovered(!!g && g.top <= 1 && g.bottom >= vh - 1);
       root.style.setProperty('--hero', clamp(1 - y / (vh * 0.65)).toFixed(3));
       root.style.setProperty('--about', aboutLocal.toFixed(4));
       // scrubber: playhead position and visibility (hidden in Works)

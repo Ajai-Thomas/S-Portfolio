@@ -351,7 +351,9 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
   window.addEventListener('orientationchange', resize);
 
   function frame(now) {
-    if (state.covered) { state.last = now; return; } // hidden behind the gallery: skip all work
+    if (state.covered) { state.last = now; return; }
+    // parked behind the Works sections nothing moves quickly: draw every other frame
+    if (state.shown >= at('works', 0) && state.shown < at('contact', 0) && (state.skip = !state.skip)) { return; }
     const dt = Math.min(0.05, (now - state.last) / 1000 || 0.016);
     state.last = now;
     const time = now / 1000;
@@ -364,7 +366,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     const p = state.shown;
 
     // events tied to progress
-    if (!reduced && state.prevShown < EVENTS.shutter && p >= EVENTS.shutter) { state.flash = 1; onShutter(); }
+    if (!reduced && state.prevShown < EVENTS.shutter && p >= EVENTS.shutter) onShutter();
     state.prevShown = p;
 
     const k = sample(p);
@@ -488,7 +490,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     setTheme: (t) => { state.theme = t; },
     setCovered: (c) => { state.covered = c; },
     setHighlight: (name) => { state.highlight = name; },
-    pulse: () => { if (!reduced) state.flash = 1; },
+    pulse: () => {}, // kept for API compatibility: no brightness flash any more
     onFrame: (fn) => { listeners.add(fn); return () => listeners.delete(fn); },
     dispose() {
       stop();
