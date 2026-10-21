@@ -533,3 +533,14 @@ html.pf-smooth { scroll-behavior: smooth; scroll-padding-top: 4rem; }
 .pf-workview h3 { font-family: var(--pf-display); font-weight: 300; font-size: clamp(1.6rem, 4vw, 2.6rem); margin: 0; line-height: 1.1; }
 .pf-workview__desc { margin: 0; color: #a39a90; line-height: 1.6; }
 .pf-workview__link { color: var(--pf-accent); justify-self: start; border-bottom: 1px solid var(--pf-accent); }
+
+
+/* Hero title legibility: soft glow behind the name, accent rule under it */
+.pf-3d .pf-hero__inner { isolation: isolate; }
+.pf-3d .pf-hero__inner::before {
+  content: ''; position: absolute; z-index: -1; inset: -18% -14%; pointer-events: none;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--pf-bg) 78%, transparent) 0%, color-mix(in srgb, var(--pf-bg) 40%, transparent) 38%, transparent 68%);
+}
+.pf-3d .pf-hero__name { text-shadow: 0 2px 26px rgba(0, 0, 0, 0.55), 0 0 2px rgba(0, 0, 0, 0.35); }
+.pf-root[data-theme='light'].pf-3d .pf-hero__name { text-shadow: 0 2px 26px rgba(255, 255, 255, 0.7), 0 0 2px rgba(255, 255, 255, 0.5); }
+.pf-hero__tag::before { content: ''; display: block; width: 3.2rem; height: 2px; margin: 0 auto 1.1rem; background: var(--pf-accent); box-shadow: 0 0 14px var(--pf-glow); }
