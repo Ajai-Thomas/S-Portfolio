@@ -1,23 +1,15 @@
 // src/App.jsx
-import { useState, useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import PortfolioPage from './components/PortfolioPage';
-import ProjectDetailPage from './components/ProjectDetailPage';
-import AboutPage from './components/AboutPage';
-import BlogPage from './components/BlogPage';
-import BlogPostPage from './components/BlogPostPage';
-import ContactPage from './components/ContactPage';
-import GalleryPage from './components/GalleryPage';
-import AdminPage from './components/AdminPage';
+import { lazy, Suspense, useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Home from './portfolio/Home';
-import { client } from './sanity'; 
+import { client } from './sanity';
+
+// The admin area is only needed by the owner: keep it out of the public bundle.
+const AdminPage = lazy(() => import('./admin/AdminPage'));
 
 const processMediaUrls = (url) => {
   if (!url) return null;
-  
+
   if (url.includes('drive.google.com')) {
     const idMatch = url.match(/[-\w]{25,}/);
     if (idMatch) {
@@ -25,22 +17,21 @@ const processMediaUrls = (url) => {
       return { thumb: direct, full: direct };
     }
   }
-  
+
   if (url.includes('cdn.sanity.io')) {
-      return {
-        thumb: `${url}?w=400&h=400&fit=crop&auto=format&q=75`,
-        full: `${url}?w=2400&auto=format&q=100` 
-      };
+    return {
+      thumb: `${url}?w=400&h=400&fit=crop&auto=format&q=75`,
+      full: `${url}?w=2400&auto=format&q=100`,
+    };
   }
 
   return { thumb: url, full: url };
 };
 
+// Old standalone pages now live inside the single portfolio page as sections.
+const toSection = (hash) => <Navigate to={{ pathname: '/', hash }} replace />;
+
 function App() {
-  const location = useLocation();
-  const isGallery = location.pathname === '/gallery';
-  const isAdmin = location.pathname === '/admin';
-  const isHome = location.pathname === '/';
   const [galleryImages, setGalleryImages] = useState([]);
 
   useEffect(() => {
@@ -55,47 +46,33 @@ function App() {
       .then((data) => {
         if (!data) return;
         const images = data
-            .flatMap(p => p.allMedia || [])
-            .map(m => m?.url ? processMediaUrls(m.url) : null)
-            .filter(Boolean);
+          .flatMap((p) => p.allMedia || [])
+          .map((m) => (m?.url ? processMediaUrls(m.url) : null))
+          .filter(Boolean);
         setGalleryImages(images);
       })
-      .catch(err => console.error("Gallery preload failed:", err));
+      .catch((err) => console.error('Gallery preload failed:', err));
   }, []);
 
-  if (isAdmin) {
-    return (
-      <Routes location={location} key={location.pathname}>
-        <Route path="/admin" element={<AdminPage />} />
-      </Routes>
-    );
-  }
-
-  // New single-page portfolio brings its own nav, footer and layout.
-  if (isHome) {
-    return <Home galleryImages={galleryImages} />;
-  }
-
   return (
-    <div className="font-sans text-black bg-ivory min-h-screen flex flex-col">
-      <Navbar />
-
-      <div className={`grow w-full ${isGallery ? '' : 'max-w-7xl mx-auto px-6 md:px-12'}`}>
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<PortfolioPage />} />
-            <Route path="/project/:projectId" element={<ProjectDetailPage />} />
-            <Route path="/gallery" element={<GalleryPage preloadedImages={galleryImages} />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/blog" element={<BlogPage />} />
-            <Route path="/blog/:postId" element={<BlogPostPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-          </Routes>
-        </AnimatePresence>
-      </div>
-
-      {!isGallery && <Footer />}
-    </div>
+    <Routes>
+      <Route path="/" element={<Home galleryImages={galleryImages} />} />
+      <Route
+        path="/admin"
+        element={(
+          <Suspense fallback={null}>
+            <AdminPage />
+          </Suspense>
+        )}
+      />
+      {/* Legacy URLs keep working and land on the matching section */}
+      <Route path="/gallery" element={toSection('#gallery')} />
+      <Route path="/about" element={toSection('#about')} />
+      <Route path="/contact" element={toSection('#contact')} />
+      <Route path="/blog/*" element={toSection('#blog')} />
+      <Route path="/project/*" element={toSection('#albums')} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

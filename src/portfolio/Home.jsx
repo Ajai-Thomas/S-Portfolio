@@ -45,6 +45,13 @@ export default function Home({ galleryImages }) {
   const is3d = mode !== 'static';
 
   useReveal(root);
+  // arriving from a legacy URL like /blog: jump to that section once the page is up
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (!id) return undefined;
+    const t = setTimeout(() => document.getElementById(id)?.scrollIntoView(), 1800);
+    return () => clearTimeout(t);
+  }, []);
   useScrollFlow({ rootRef: root, enabled: is3d, engineRef, flowRef, entryCount: content.about.timeline.length, reduced });
 
   useEffect(() => {

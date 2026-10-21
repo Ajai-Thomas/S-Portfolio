@@ -141,3 +141,26 @@ With `prefers-reduced-motion`, the tumbling, drifting, dust, shake and flash are
 
 ### Performance notes
 Pixel ratio is capped at 2 (1.25 on phones/touch), phones drop depth of field and chromatic aberration and use fewer floating props, rendering pauses when the tab is hidden, resources are disposed on unmount, and the 3D chunk loads after first paint. If frames run slow the engine lowers resolution automatically. On phones, tilt follows touch-drag (and the gyroscope on Android; iOS needs a permission prompt that isn't wired up).
+
+## Admin (`/admin`)
+
+Manage albums (Sanity `project`), videos and Diary posts without opening Sanity Studio.
+
+- **Albums:** drag-and-drop photo upload (big camera files are resized to 3200px automatically), reorder by dragging or with the arrows, "Cover" to choose the album cover (first photo), captions, and links for YouTube, Google Drive or plain image URLs. YouTube links show up in the site's **Video Edits** section.
+- **Diary:** title, author, date, excerpt and a text editor with Heading / Subheading / Quote buttons and a live preview.
+- **Dashboard:** counts, search, delete with confirmation, "View site". Unsaved changes trigger a warning before leaving.
+
+### Setup (important)
+Anything named `VITE_*` is copied into the public JavaScript, so a password or write token stored that way is visible to every visitor. The admin now keeps both on the server (`api/admin.js`, a Vercel function): the browser logs in with the password and receives a short-lived signed session; all writes go through the function, which only allows creating, editing and deleting projects and blog posts.
+
+Set these environment variables (Vercel → Project Settings → Environment Variables, and `.env.local` for local dev):
+
+| Variable | Value |
+| --- | --- |
+| `ADMIN_PASSWORD` | the admin login password |
+| `SANITY_WRITE_TOKEN` | a Sanity API token with **Editor** permission (sanity.io/manage → API → Tokens) |
+
+The old `VITE_ADMIN_PASSWORD` / `VITE_SANITY_WRITE_TOKEN` names are still read by the server function, so nothing breaks, but rename them and **rotate the Sanity token**, because the previous setup exposed it. `npm run dev` serves the same API locally. Uploads are limited to about 4.4 MB per image by Vercel, which is why large files are compressed in the browser first.
+
+### Old pages
+`/about`, `/contact`, `/blog`, `/gallery` and `/project/…` no longer have their own pages; they redirect to the matching section of `/`.
