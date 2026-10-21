@@ -13,7 +13,7 @@ function Player({ v }) {
     return <iframe title={v.title} src={`https://www.youtube-nocookie.com/embed/${v.vid || v.id}?autoplay=1&rel=0`} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />;
   }
   if (v.type === 'vimeo') {
-    return <iframe title={v.title} src={`https://player.vimeo.com/video/${v.id}?autoplay=1`} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />;
+    return <iframe title={v.title} src={`https://player.vimeo.com/video/${v.vid || v.id}?autoplay=1`} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />;
   }
   if (v.type === 'mp4') {
     return <video src={v.src} poster={v.thumb?.src} controls autoPlay playsInline />;
@@ -55,12 +55,12 @@ function Card({ v, i, onOpen }) {
   );
 }
 
-export default function Videos({ videos }) {
+export default function Videos({ videos, n = 3, total = 5 }) {
   const [active, setActive] = useState(null);
   return (
     <section id="video" className="pf-section" aria-labelledby="video-title">
       <div className="pf-wrap">
-        <SectionHead n={3} title="Video Edits" kicker="MOTION" />
+        <SectionHead n={n} total={total} title="Video Edits" kicker="MOTION" />
         <span id="video-title" className="pf-sr">Video Edits</span>
         <ul className="pf-videos">
           {videos.map((v, i) => <Card key={v.id} v={v} i={i} onOpen={setActive} />)}

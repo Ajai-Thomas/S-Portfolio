@@ -64,12 +64,12 @@ function AlbumView({ album, onClose }) {
   );
 }
 
-export default function Albums({ albums }) {
+export default function Albums({ albums, n = 2, total = 5 }) {
   const [active, setActive] = useState(null);
   return (
     <section id="albums" className="pf-section" aria-labelledby="albums-title">
       <div className="pf-wrap">
-        <SectionHead n={2} title="Albums" kicker="SERIES" />
+        <SectionHead n={n} total={total} title="Albums" kicker="SERIES" />
         <span id="albums-title" className="pf-sr">Albums</span>
         <ul className="pf-albums">
           {albums.map((a, i) => (

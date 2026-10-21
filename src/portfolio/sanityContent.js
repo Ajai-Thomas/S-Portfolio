@@ -52,8 +52,36 @@ function mapProjects(data) {
   return { albums, videos };
 }
 
+const vimeoId = (url) => (url.match(/vimeo\.com\/(?:video\/)?(\d+)/) || [])[1] || null;
+
+function mapVideoEdit(v) {
+  const url = v.videoUrl || '';
+  const yt = youtubeId(url);
+  const vm = vimeoId(url);
+  const type = yt ? 'youtube' : vm ? 'vimeo' : url ? 'mp4' : 'placeholder';
+  let thumbSrc = null;
+  if (v.thumbUploaded) thumbSrc = `${v.thumbUploaded}?w=1280&auto=format&q=80`;
+  else if (v.thumbnailUrl) thumbSrc = driveDirect(v.thumbnailUrl);
+  else if (yt) thumbSrc = `https://img.youtube.com/vi/${yt}/hqdefault.jpg`;
+  return {
+    id: v._id, vid: yt || vm || undefined, src: type === 'mp4' ? url : undefined, type,
+    title: v.title || 'Untitled', duration: v.duration || '',
+    thumb: thumbSrc ? { src: thumbSrc, alt: v.title || 'Video thumbnail', w: 1280, h: 720 } : null,
+  };
+}
+
+function mapSelected(w) {
+  const url = w.uploaded || w.imageUrl;
+  if (!url) return null;
+  return {
+    id: w._id, title: w.title || 'Untitled', category: w.category || '', year: w.date ? w.date.slice(0, 4) : '',
+    description: w.description || '', link: w.link || '',
+    photo: toPhoto({ url, alt: w.alt }, w.title || ''),
+  };
+}
+
 export function useSanityPortfolio() {
-  const [state, setState] = useState({ albums: [], videos: [], posts: [], loaded: false });
+  const [state, setState] = useState({ albums: [], videos: [], selected: [], posts: [], loaded: false });
   useEffect(() => {
     let alive = true;
     Promise.all([
@@ -62,10 +90,20 @@ export function useSanityPortfolio() {
         "media": mediaItems[]{ "url": coalesce(url, asset->url), "type": coalesce(type, "image"), alt }
       }`),
       client.fetch(`*[_type == "blogPost"] | order(date desc) { _id, title, date, author, excerpt, content }`),
+      client.fetch(`*[_type == "selectedWork"] | order(coalesce(order, 9999) asc, date desc) { _id, title, category, date, description, link, alt, imageUrl, "uploaded": image.asset->url }`),
+      client.fetch(`*[_type == "videoEdit"] | order(coalesce(order, 9999) asc, date desc) { _id, title, videoUrl, duration, thumbnailUrl, "thumbUploaded": thumbnail.asset->url }`),
     ])
-      .then(([projects, posts]) => {
+      .then(([projects, posts, selected, videoEdits]) => {
         if (!alive) return;
-        setState({ ...mapProjects(projects || []), posts: posts || [], loaded: true });
+        const fromProjects = mapProjects(projects || []);
+        setState({
+          albums: fromProjects.albums,
+          // dedicated video edits first, then any YouTube links added to albums
+          videos: [...(videoEdits || []).map(mapVideoEdit), ...fromProjects.videos],
+          selected: (selected || []).map(mapSelected).filter(Boolean),
+          posts: posts || [],
+          loaded: true,
+        });
       })
       .catch((err) => {
         console.error('Sanity load failed:', err);

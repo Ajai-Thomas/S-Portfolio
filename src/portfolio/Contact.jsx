@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { SectionHead } from './Chrome';
 
-export default function Contact({ contact }) {
+export default function Contact({ contact, n = 5, total = 5 }) {
   const [f, setF] = useState({ name: '', email: '', message: '' });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
@@ -15,7 +15,7 @@ export default function Contact({ contact }) {
   return (
     <section id="contact" className="pf-section pf-contact" aria-labelledby="contact-title">
       <div className="pf-wrap">
-        <SectionHead n={5} title="Contact" kicker="BOOK" />
+        <SectionHead n={n} total={total} title="Contact" kicker="BOOK" />
         <h2 id="contact-title" className="pf-contact__big pf-reveal">
           {contact.heading}<br /><em>{contact.subheading}</em>
         </h2>

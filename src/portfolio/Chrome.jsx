@@ -3,17 +3,17 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { SECTIONS, finePointer, reducedMotion } from './util';
 
-export function Nav({ initials, theme, onToggleTheme }) {
+export function Nav({ initials, theme, onToggleTheme, sections = SECTIONS }) {
   const [active, setActive] = useState('');
   useEffect(() => {
-    const els = ['intro', ...SECTIONS.map((s) => s.id)].map((id) => document.getElementById(id)).filter(Boolean);
+    const els = ['intro', ...sections.map((s) => s.id)].map((id) => document.getElementById(id)).filter(Boolean);
     const io = new IntersectionObserver(
       (entries) => entries.forEach((e) => e.isIntersecting && setActive(e.target.id)),
       { rootMargin: '-45% 0px -50% 0px' }
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, []);
+  }, [sections]);
 
   return (
     <>
@@ -22,7 +22,7 @@ export function Nav({ initials, theme, onToggleTheme }) {
       <a href="#intro" className="pf-nav__logo" aria-label="Back to top">{initials}</a>
       <nav aria-label="Sections">
         <ul>
-          {SECTIONS.map((s) => (
+          {sections.map((s) => (
             <li key={s.id}>
               <a href={`#${s.id}`} aria-current={active === s.id ? 'true' : undefined}>{s.label}</a>
             </li>

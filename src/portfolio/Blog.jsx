@@ -4,12 +4,12 @@ import { Modal, SectionHead } from './Chrome';
 
 const fmt = (d) => (d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '');
 
-export default function Blog({ posts, loaded }) {
+export default function Blog({ posts, loaded, n = 4, total = 5 }) {
   const [open, setOpen] = useState(null);
   return (
     <section id="blog" className="pf-section" aria-labelledby="blog-title">
       <div className="pf-wrap">
-        <SectionHead n={4} total={5} title="Diary" kicker="WRITINGS" />
+        <SectionHead n={n} total={total} title="Diary" kicker="WRITINGS" />
         <span id="blog-title" className="pf-sr">Diary</span>
         {!loaded && <p className="pf-mono pf-muted">LOADING…</p>}
         {loaded && !posts.length && <p className="pf-mono pf-muted">NO POSTS YET</p>}

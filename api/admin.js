@@ -16,7 +16,7 @@ const PROJECT_ID = '84ksnydx';
 const DATASET = 'production';
 const API_VERSION = '2024-05-14';
 const HOST = `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}`;
-const ALLOWED_TYPES = new Set(['project', 'blogPost']);
+const ALLOWED_TYPES = new Set(['project', 'blogPost', 'selectedWork', 'videoEdit']);
 const SESSION_MS = 12 * 60 * 60 * 1000;
 const MAX_UPLOAD = 4.4 * 1024 * 1024; // Vercel functions accept ~4.5 MB request bodies
 
@@ -102,7 +102,7 @@ export default async function handler(req, res) {
 
   if (action === 'ping') return res.status(200).json({ ok: true });
 
-  // ── write to Sanity (create / patch / delete of projects and blog posts only) ─────
+  // ── write to Sanity (create / patch / delete of the four site content types only) ─────
   if (action === 'mutate') {
     const mutations = body?.mutations;
     if (!Array.isArray(mutations) || !mutations.length || mutations.length > 50) return res.status(400).json({ error: 'Invalid mutations' });
@@ -111,7 +111,7 @@ export default async function handler(req, res) {
       const kind = Object.keys(m)[0];
       if (Object.keys(m).length !== 1 || !['create', 'patch', 'delete'].includes(kind)) return res.status(400).json({ error: `Operation "${kind}" is not allowed` });
       if (kind === 'create') {
-        if (!ALLOWED_TYPES.has(m.create?._type)) return res.status(400).json({ error: 'Only projects and blog posts can be created' });
+        if (!ALLOWED_TYPES.has(m.create?._type)) return res.status(400).json({ error: 'Only albums, selected works, video edits and blog posts can be created' });
       } else {
         const id = m[kind]?.id;
         if (typeof id !== 'string') return res.status(400).json({ error: 'Missing document id' });

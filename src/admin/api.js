@@ -89,3 +89,29 @@ export async function prepareImage(file, { maxEdge = 3200, limit = 4.2 * 1024 * 
   }
   throw new Error(`"${file.name}" is too large even after compression. Try a smaller export.`);
 }
+
+export function vimeoId(url = '') {
+  const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  return m ? m[1] : null;
+}
+
+// Works out what kind of video a link is. type: 'youtube' | 'vimeo' | 'mp4' | null
+export function videoInfo(url = '') {
+  const yt = youtubeId(url);
+  if (yt) return { type: 'youtube', id: yt, thumb: `https://img.youtube.com/vi/${yt}/hqdefault.jpg` };
+  const vm = vimeoId(url);
+  if (vm) return { type: 'vimeo', id: vm, thumb: '' };
+  if (/\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(url)) return { type: 'mp4', id: '', thumb: '' };
+  return { type: null, id: '', thumb: '' };
+}
+
+// Gives every item in a list a new `order` (10, 20, 30 …). Only changed items are patched.
+export function reorderMutations(list, from, to) {
+  const next = [...list];
+  const [m] = next.splice(from, 1);
+  next.splice(to, 0, m);
+  return next
+    .map((d, i) => ({ id: d._id, order: (i + 1) * 10, changed: d.order !== (i + 1) * 10 }))
+    .filter((d) => d.changed)
+    .map((d) => ({ patch: { id: d.id, set: { order: d.order } } }));
+}

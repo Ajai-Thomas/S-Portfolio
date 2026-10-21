@@ -5,14 +5,18 @@ import Login from './Login';
 import Dashboard from './Dashboard';
 import ProjectEditor from './ProjectEditor';
 import PostEditor from './PostEditor';
+import SelectedWorkEditor from './SelectedWorkEditor';
+import VideoEditor from './VideoEditor';
 import { ToastProvider } from './ui';
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(() => !!getSession());
   const [notice, setNotice] = useState('');
-  const [view, setView] = useState({ name: 'dashboard' }); // dashboard | project | post
+  // dashboard, or an editor: { tab: 'projects' | 'selected' | 'videos' | 'posts', doc }
+  const [view, setView] = useState(null);
+  const [tab, setTab] = useState('projects'); // remembered so saving returns you to the same list
 
-  const logout = useCallback((msg = '') => { clearSession(); setNotice(msg); setAuthed(false); setView({ name: 'dashboard' }); }, []);
+  const logout = useCallback((msg = '') => { clearSession(); setNotice(msg); setAuthed(false); setView(null); }, []);
 
   useEffect(() => { document.title = 'Admin'; }, []);
 
@@ -27,24 +31,24 @@ export default function AdminPage() {
     return () => window.removeEventListener('pf-admin-expired', expired);
   }, [logout]);
 
-  const toDashboard = () => setView({ name: 'dashboard' });
+  const close = () => setView(null);
+  const editors = { projects: ProjectEditor, selected: SelectedWorkEditor, videos: VideoEditor, posts: PostEditor };
+  const Editor = view && editors[view.tab];
 
   return (
     <ToastProvider>
       <div className="ad-root">
         {!authed ? (
           <Login notice={notice} onLogin={() => { setNotice(''); setAuthed(true); }} />
-        ) : view.name === 'project' ? (
-          <ProjectEditor key={view.doc?._id || 'new'} project={view.doc} onDone={toDashboard} />
-        ) : view.name === 'post' ? (
-          <PostEditor key={view.doc?._id || 'new'} post={view.doc} onDone={toDashboard} />
+        ) : Editor ? (
+          <Editor key={`${view.tab}-${view.doc?._id || 'new'}`} {...(view.tab === 'projects' ? { project: view.doc } : view.tab === 'posts' ? { post: view.doc } : { doc: view.doc })} onDone={close} />
         ) : (
           <Dashboard
+            tab={tab}
+            setTab={setTab}
             onLogout={() => logout()}
-            onNewProject={() => setView({ name: 'project', doc: null })}
-            onEditProject={(doc) => setView({ name: 'project', doc })}
-            onNewPost={() => setView({ name: 'post', doc: null })}
-            onEditPost={(doc) => setView({ name: 'post', doc })}
+            onNew={(t) => setView({ tab: t, doc: null })}
+            onEdit={(t, doc) => setView({ tab: t, doc })}
           />
         )}
       </div>

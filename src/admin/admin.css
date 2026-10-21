@@ -111,3 +111,10 @@
 .ad-toast--error { border-left-color: var(--danger); }
 @keyframes ad-in { from { opacity: 0; transform: translateY(8px); } }
 @media (prefers-reduced-motion: reduce) { .ad-toast { animation: none; } .ad-root * { transition: none !important; } }
+
+/* single image field, reorder arrows, small status text */
+.ad-pic { display: grid; gap: 0.6rem; justify-items: start; margin-bottom: 0.6rem; }
+.ad-pic img { max-width: min(100%, 26rem); max-height: 15rem; border-radius: 8px; border: 1px solid var(--line); object-fit: cover; }
+.ad-order { display: inline-flex; gap: 0.25rem; margin-right: 0.3rem; }
+.ad-ok { color: var(--ok); }
+.ad-bad { color: var(--danger); }

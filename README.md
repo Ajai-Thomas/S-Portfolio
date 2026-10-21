@@ -144,11 +144,14 @@ Pixel ratio is capped at 2 (1.25 on phones/touch), phones drop depth of field an
 
 ## Admin (`/admin`)
 
-Manage albums (Sanity `project`), videos and Diary posts without opening Sanity Studio.
+Manage everything on the site without opening Sanity Studio. Four lists, each with search, edit, delete and (where order matters) up/down arrows:
 
-- **Albums:** drag-and-drop photo upload (big camera files are resized to 3200px automatically), reorder by dragging or with the arrows, "Cover" to choose the album cover (first photo), captions, and links for YouTube, Google Drive or plain image URLs. YouTube links show up in the site's **Video Edits** section.
+- **Albums:** drag-and-drop photo upload (big camera files are resized to 3200px automatically), reorder by dragging or with the arrows, "Cover" to choose the album cover (first photo), captions, and links for YouTube, Google Drive or plain image URLs. YouTube links added here also appear in Video Edits.
+- **Selected works:** highlighted pieces (title, category, date, description, one image by upload or link, optional "View project" link). They appear in a **Selected Works** section at the start of Works; the section only exists once you add one, and the frame numbers adjust. Use the arrows to set the order.
+- **Video edits:** title, video link (YouTube, Vimeo, or a direct `.mp4` link), duration, date, description and thumbnail. The link type is detected as you paste it; YouTube uses its own thumbnail unless you upload one (Vimeo needs one). These fill the **Video Edits** section, in the order you set.
 - **Diary:** title, author, date, excerpt and a text editor with Heading / Subheading / Quote buttons and a live preview.
-- **Dashboard:** counts, search, delete with confirmation, "View site". Unsaved changes trigger a warning before leaving.
+
+Unsaved changes trigger a warning before leaving, and saving returns you to the list you came from. If you host Sanity Studio, redeploy it (`npm run deploy` in `studio/`) so it also shows the two new document types (`selectedWork`, `videoEdit`); the site and admin work without that.
 
 ### Setup (important)
 Anything named `VITE_*` is copied into the public JavaScript, so a password or write token stored that way is visible to every visitor. The admin now keeps both on the server (`api/admin.js`, a Vercel function): the browser logs in with the password and receives a short-lived signed session; all writes go through the function, which only allows creating, editing and deleting projects and blog posts.

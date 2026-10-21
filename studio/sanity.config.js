@@ -3,6 +3,8 @@ import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import project from './schemaTypes/project'
 import blogPost from './schemaTypes/blogPost'
+import selectedWork from './schemaTypes/selectedWork'
+import videoEdit from './schemaTypes/videoEdit'
 
 export default defineConfig({
   name: 'default',
@@ -14,6 +16,6 @@ export default defineConfig({
   plugins: [structureTool(), visionTool()],
 
   schema: {
-    types: [project, blogPost],
+    types: [project, blogPost, selectedWork, videoEdit],
   },
 })

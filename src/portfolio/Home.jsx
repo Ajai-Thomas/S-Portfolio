@@ -1,10 +1,10 @@
 // Single-page portfolio mounted at "/".
 // One fixed WebGL canvas (src/scene) is the background; this is the HTML laid over it.
 // The gallery section renders the existing GalleryPage untouched.
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import content from './content.json';
 import './portfolio.css';
-import { reducedMotion, resolveAlbum, useNear, useReveal } from './util';
+import { SECTIONS, reducedMotion, resolveAlbum, useNear, useReveal } from './util';
 import { ApertureLoader, Cursor, FilmStrip, Nav, SectionHead } from './Chrome';
 import Hero from './Hero';
 import Journey from './Journey';
@@ -12,6 +12,7 @@ import Albums from './Albums';
 import Videos from './Videos';
 import Contact from './Contact';
 import Blog from './Blog';
+import SelectedWorks from './SelectedWorks';
 import { useSanityPortfolio } from './sanityContent';
 import GalleryPage from '../components/GalleryPage';
 import Annotations from './Annotations';
@@ -41,6 +42,11 @@ export default function Home({ galleryImages }) {
   // Albums/videos come from Sanity; content.json is the placeholder fallback.
   const albums = (sanity.albums.length ? sanity.albums : sanity.loaded ? content.albums : []).map(resolveAlbum);
   const videos = sanity.videos.length ? sanity.videos : content.videos;
+  // "Selected Works" only exists when there is at least one; frame numbers follow from that.
+  const hasSelected = sanity.selected.length > 0;
+  const lead = hasSelected ? 1 : 0;
+  const total = 5 + lead;
+  const navSections = useMemo(() => SECTIONS.filter((s) => s.id !== 'selected' || hasSelected), [hasSelected]);
   const is3d = mode !== 'static';
 
   useReveal(root);
@@ -69,7 +75,7 @@ export default function Home({ galleryImages }) {
       <a className="pf-skip" href="#about">Skip to content</a>
       {mode !== 'static' && <ApertureLoader progress={progress} done={mode === 'ready'} />}
       <Cursor />
-      <Nav initials={content.site.initials} theme={theme} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
+      <Nav initials={content.site.initials} theme={theme} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} sections={navSections} />
       {is3d && (
         <Suspense fallback={null}>
           <Scene
@@ -105,15 +111,17 @@ export default function Home({ galleryImages }) {
 
         <section id="pullback" className="pf-pullback" aria-labelledby="works-title">
           <div className="pf-pullback__text">
-            <p className="pf-mono pf-reveal">SELECTED WORK</p>
+            <p className="pf-mono pf-reveal">PORTFOLIO</p>
             <h2 id="works-title" className="pf-pullback__title"><span className="pf-reveal pf-mask"><span>Works</span></span></h2>
           </div>
         </section>
 
         <div id="works" className="pf-works">
+          <SelectedWorks works={sanity.selected} n={1} total={total} />
+          {hasSelected && <FilmStrip frame={2} />}
           <section id="gallery" className="pf-section pf-section--gallery" aria-labelledby="gallery-title">
             <div className="pf-wrap">
-              <SectionHead n={1} title="Gallery" kicker="DRAG TO ROTATE" />
+              <SectionHead n={1 + lead} total={total} title="Gallery" kicker="DRAG TO ROTATE" />
               <span id="gallery-title" className="pf-sr">Gallery</span>
             </div>
             {/* Existing gallery, unchanged. Mounted when near the viewport. */}
@@ -122,14 +130,14 @@ export default function Home({ galleryImages }) {
             </div>
           </section>
           <FilmStrip frame={3} />
-          <Albums albums={albums} />
+          <Albums albums={albums} n={2 + lead} total={total} />
           <FilmStrip frame={4} />
-          <Videos videos={videos} />
+          <Videos videos={videos} n={3 + lead} total={total} />
           <FilmStrip frame={5} />
-          <Blog posts={sanity.posts} loaded={sanity.loaded} />
+          <Blog posts={sanity.posts} loaded={sanity.loaded} n={4 + lead} total={total} />
         </div>
 
-        <Contact contact={content.contact} />
+        <Contact contact={content.contact} n={5 + lead} total={total} />
       </main>
 
       <footer className="pf-footer pf-mono">
