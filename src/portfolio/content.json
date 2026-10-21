@@ -1,8 +1,8 @@
 {
   "_help": "Edit this file to change the portfolio page. Anything with src:null shows a clearly labelled PLACEHOLDER. Photo objects: { src, srcset?, sizes?, full?, alt, caption?, w?, h? }. Video types: youtube (id), vimeo (id), mp4 (src), placeholder. about.timeline entries scroll past in order (keep 5–7). about.floaterPhotos: optional image URLs shown as small prints floating around the 3D camera. See README.",
   "site": {
-    "name": "YOUR NAME",
-    "initials": "A.T.",
+    "name": "SREERAG",
+    "initials": "S.",
     "tagline": "I Don't Take Shots Anymore. I Take My Time To Observe And Then Capture.",
     "location": "Your City, Country",
     "role": "Photographer & Editor"
