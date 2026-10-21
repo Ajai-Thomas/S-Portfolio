@@ -20,7 +20,6 @@ const SHUTTER = [30, 60, 125, 250, 500, 1000, 2000, 4000];
 
 export default function Hero({ name, tagline, role, location, fallback }) {
   const root = useRef(null);
-  const [flash, setFlash] = useState(false);
   const [frame, setFrame] = useState(1);
   const [exp, setExp] = useState({ iso: 400, f: 2.8, s: 250 });
 
@@ -52,9 +51,7 @@ export default function Hero({ name, tagline, role, location, fallback }) {
     el.addEventListener('pointermove', move);
     raf = requestAnimationFrame(loop);
     const shutter = setInterval(() => {
-      setFlash(true);
       setFrame((f) => (f % 36) + 1);
-      setTimeout(() => setFlash(false), 220);
     }, 9000);
     return () => {
       el.removeEventListener('pointermove', move);
@@ -99,7 +96,6 @@ export default function Hero({ name, tagline, role, location, fallback }) {
         </div>
       </div>
 
-      <div className={`pf-flash ${flash ? 'is-on' : ''}`} aria-hidden="true" />
       <a href="#about" className="pf-scroll pf-mono" aria-label="Scroll to About">SCROLL<span /></a>
     </section>
   );

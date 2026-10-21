@@ -141,9 +141,6 @@ html.pf-smooth { scroll-behavior: smooth; scroll-padding-top: 4rem; }
 .pf-vf .top span:first-child { color: var(--pf-accent); }
 @media (max-width: 520px) { .pf-vf .readout { left: 1.8rem; right: 1.8rem; font-size: 0.55rem; letter-spacing: 0.08em; } .pf-vf .top span:nth-child(2) { display: none; } }
 @media (min-width: 768px) { .pf-vf { inset: 5.5rem 2.5rem 2.5rem; } }
-.pf-flash { position: absolute; inset: 0; z-index: 5; background: #fff; opacity: 0; pointer-events: none; }
-.pf-flash.is-on { animation: pf-shutter 0.22s ease-out; }
-@keyframes pf-shutter { 0% { opacity: 0; } 20% { opacity: 0.55; } 100% { opacity: 0; } }
 .pf-scroll { position: absolute; z-index: 6; bottom: 3.6rem; left: 50%; transform: translateX(-50%); display: grid; justify-items: center; gap: 0.4rem; font-size: 0.62rem; }
 .pf-scroll span { width: 1px; height: 28px; background: var(--pf-accent); transform-origin: top; animation: pf-cue 1.8s ease-in-out infinite; }
 @keyframes pf-cue { 0% { transform: scaleY(0); } 60% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
@@ -194,7 +191,10 @@ html.pf-smooth { scroll-behavior: smooth; scroll-padding-top: 4rem; }
 /* Gallery wrapper: the gallery keeps its own black stage and sizing */
 .pf-section--gallery { padding-bottom: 0; }
 .pf-section--gallery .pf-head { margin-bottom: 1.5rem; }
-.pf-gallery { min-height: 100vh; background: #000; position: relative; }
+.pf-gallery { min-height: 100vh; background: transparent; position: relative; }
+/* The gallery component paints its own black (Tailwind bg-black). Make it see-through here so the
+   page background continues behind the sphere. The gallery code itself is unchanged. */
+.pf-gallery .bg-black { background-color: transparent !important; }
 
 /* Albums */
 .pf-albums { display: grid; gap: 2.5rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
@@ -306,8 +306,6 @@ html.pf-smooth { scroll-behavior: smooth; scroll-padding-top: 4rem; }
 .pf-nav__edge { position: fixed; right: 0.9rem; top: 50%; writing-mode: vertical-rl; transform: translateY(-50%) rotate(180deg); color: var(--pf-muted); font-size: 0.6rem; pointer-events: none; display: none; }
 @media (min-width: 900px) { .pf-nav__edge { display: block; } }
 
-.pf-shutterflash { position: fixed; inset: 0; z-index: 95; background: #fff; opacity: 0; pointer-events: none; }
-.pf-shutterflash.is-on { animation: pf-shutter 0.26s ease-out; }
 .pf-loader__pct { font-size: 1.4rem; letter-spacing: 0.2em; }
 .pf-loader .pf-blade { animation-play-state: running; }
 
