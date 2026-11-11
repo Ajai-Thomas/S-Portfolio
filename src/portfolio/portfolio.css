@@ -195,15 +195,21 @@ html.pf-smooth { scroll-behavior: smooth; scroll-padding-top: 4rem; }
 .pf-modal { position: absolute; inset: 0; pointer-events: auto; background: color-mix(in srgb, var(--pf-bg) 96%, transparent); overflow-y: auto; padding: 4rem 1rem 2rem; color: var(--pf-text); animation: pf-fade-in 0.25s; }
 @keyframes pf-fade-in { from { opacity: 0; } }
 .pf-x { position: fixed; top: 0.8rem; right: 1rem; z-index: 5; width: 2.6rem; height: 2.6rem; font-size: 1.8rem; line-height: 1; border: 1px solid var(--pf-line) !important; border-radius: 50%; background: var(--pf-bg) !important; color: var(--pf-text); }
-.pf-albumview { padding-inline: clamp(1rem, 5vw, 4rem); }
-.pf-albumview__bar { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; }
-.pf-albumview__bar h3 { font-family: var(--pf-display); font-weight: 300; font-size: clamp(2rem, 6vw, 4rem); margin: 0.3rem 0; line-height: 1; }
-.pf-albumview__grid { columns: 2 12rem; column-gap: 0.8rem; max-width: 80rem; margin-inline: auto; }
-@media (min-width: 900px) { .pf-albumview__grid { columns: 4; } }
-.pf-albumview__grid li { break-inside: avoid; margin-bottom: 0.8rem; }
-.pf-albumview__grid button { display: block; width: 100%; overflow: hidden; }
-.pf-albumview__grid img { width: 100%; height: auto; transition: transform 0.4s; }
-.pf-albumview__grid button:hover img { transform: scale(1.04); }
+.pf-modal.pf-albumview { background: var(--pf-bg); padding: 0 0 4rem; } /* fully opaque: nothing ghosts through from the page */
+.pf-albumview__bar { position: sticky; top: 0; z-index: 4; display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; padding: 1.4rem clamp(1rem, 5vw, 4rem) 1.1rem; background: var(--pf-bg); border-bottom: 1px solid var(--pf-line); }
+.pf-albumview__bar h3 { font-family: var(--pf-display); font-weight: 300; font-size: clamp(1.8rem, 4.5vw, 3rem); margin: 0.2rem 0 0; line-height: 1.05; }
+.pf-albumview__bar .pf-muted { margin: 0.35rem 0 0; font-size: 0.95rem; max-width: 40rem; }
+.pf-albumview__bar .pf-x { position: static; flex: none; }
+/* uniform grid: every tile the same shape, even gaps, photos cropped to fit (the full photo opens on click) */
+.pf-root .pf-albumview__grid { display: grid; gap: clamp(0.6rem, 1.4vw, 1.1rem); grid-template-columns: repeat(2, 1fr); max-width: 84rem; margin: clamp(1.2rem, 3vw, 2.2rem) auto 0; padding-inline: clamp(1rem, 5vw, 4rem); }
+@media (min-width: 700px) { .pf-root .pf-albumview__grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1100px) { .pf-root .pf-albumview__grid { grid-template-columns: repeat(4, 1fr); } }
+.pf-albumview__grid li { margin: 0; }
+.pf-albumview__grid button { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; background: var(--pf-surface); border-radius: 3px; }
+.pf-albumview__grid img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.3s; }
+.pf-albumview__grid button::after { content: attr(data-n); position: absolute; left: 0.6rem; bottom: 0.5rem; font-family: var(--pf-mono); font-size: 0.62rem; letter-spacing: 0.14em; color: #fff; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7); opacity: 0; transition: opacity 0.25s; }
+.pf-albumview__grid button:hover img, .pf-albumview__grid button:focus-visible img { transform: scale(1.05); }
+.pf-albumview__grid button:hover::after, .pf-albumview__grid button:focus-visible::after { opacity: 1; }
 .pf-lightbox { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.5rem; padding: 3.5rem 0.5rem 1rem; background: rgba(5, 5, 5, 0.97); color: #ece6dc; z-index: 2; }
 .pf-lightbox figure { margin: 0; display: grid; gap: 0.8rem; justify-items: center; min-width: 0; }
 .pf-lightbox img { max-width: 100%; max-height: 78vh; width: auto; height: auto; object-fit: contain; }

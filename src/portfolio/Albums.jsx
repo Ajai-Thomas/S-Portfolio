@@ -53,8 +53,8 @@ function AlbumView({ album, onClose }) {
       <ul className="pf-albumview__grid">
         {album.photos.map((p, i) => (
           <li key={i}>
-            <button onClick={() => setOpen(i)} aria-label={`Open photo ${i + 1}: ${p.alt || ''}`}>
-              <Img photo={p} seed={album.seed * 10 + i} w={600} h={600} sizes="(min-width: 900px) 22vw, 45vw" />
+            <button data-n={String(i + 1).padStart(2, '0')} onClick={() => setOpen(i)} aria-label={`Open photo ${i + 1}: ${p.alt || ''}`}>
+              <Img photo={p} seed={album.seed * 10 + i} w={600} h={750} sizes="(min-width: 1100px) 20vw, (min-width: 700px) 30vw, 47vw" />
             </button>
           </li>
         ))}
