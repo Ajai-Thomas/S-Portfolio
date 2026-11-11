@@ -68,8 +68,12 @@ void main(){ vec2 c = gl_PointCoord - 0.5; float d = length(c); if (d > 0.5) dis
 
 export async function createScene({ canvas, lite = false, reduced = false, theme = 'dark', photos = [], onProgress = () => {}, onShutter = () => {}, onLost = () => {} }) {
   const tick = (v) => { onProgress(v); return new Promise((r) => setTimeout(r, 0)); };
-  const maxDpr = lite ? 1 : 1.5;
+  const maxDpr = lite ? 1.5 : 2;
+  // Total pixels we are willing to render (≈ a 2880x1800 retina laptop). Bigger screens get a
+  // slightly lower ratio, so a 4K monitor cannot exhaust GPU memory; normal screens stay native.
+  const PIXEL_BUDGET = lite ? 2.6e6 : 5.8e6;
   let dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
+  const topDpr = dpr;
   let qualityDpr = dpr; // the sharpest ratio allowed; the adaptive logic may lower it on slow GPUs
 
   // 1 · renderer ───────────────────────────────────────────────────────────
@@ -193,7 +197,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
   }
 
   // 6 · post-processing (desktop only) ─────────────────────────────────────
-  let composer = null, dof = null, dofPass = null, bloom = null, chroma = null;
+  let composer = null, dof = null, dofPass = null, bloom = null, chroma = null, fxaaPass = null;
   if (!lite) {
     composer = new EffectComposer(renderer, { multisampling: 0, frameBufferType: THREE.HalfFloatType }); // MSAA 4x on a half-float target costs ~150 MB at retina size
     composer.addPass(new RenderPass(scene, camera));
@@ -208,7 +212,8 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     composer.addPass(dofPass);
     composer.addPass(new EffectPass(camera, bloom));
     composer.addPass(new EffectPass(camera, chroma, tone));
-    composer.addPass(new EffectPass(camera, new FXAAEffect())); // cheap antialiasing (replaces MSAA)
+    fxaaPass = new EffectPass(camera, new FXAAEffect()); // cheap antialiasing, only used below ~1.75x (it softens the image slightly)
+    composer.addPass(fxaaPass);
     composer.addPass(new EffectPass(camera, grain, vignette));
   }
   await tick(0.9);
@@ -240,7 +245,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
   const reB = at('pullback', 0.8);
 
   // ── state ────────────────────────────────────────────────────────────────
-  const state = { progress: 0, shown: 0, prevShown: 0, era: 0, px: 0, py: 0, sx: 0, sy: 0, flash: 0, theme, running: false, last: 0, slow: 0, frames: 0, covered: false, highlight: null, hlG: 0, anno: 0,
+  const state = { progress: 0, shown: 0, prevShown: 0, era: 0, px: 0, py: 0, sx: 0, sy: 0, flash: 0, theme, running: false, last: 0, slow: 0, frames: 0, fullFrames: 0, effDpr: dpr, covered: false, highlight: null, hlG: 0, anno: 0,
     lastActive: 0, lastMove: 0, lastResChange: 0, skip: false, profile: false, cpuMs: 0, gpuMs: 0 };
   const colA = new THREE.Color(), colB = new THREE.Color();
   const tmpA = new THREE.Color(), tmpB = new THREE.Color();
@@ -346,12 +351,15 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     const w = window.innerWidth, h = window.innerHeight;
     if (lite && sizeW === w && Math.abs(sizeH - h) < 160 && sizeH) return; // phone address bar
     sizeW = w; sizeH = h;
-    renderer.setPixelRatio(dpr);
+    const eff = Math.min(dpr, Math.sqrt(PIXEL_BUDGET / (w * h)));
+    state.effDpr = eff;
+    if (fxaaPass) fxaaPass.enabled = eff < 1.75; // at retina density aliasing is invisible
+    renderer.setPixelRatio(eff);
     renderer.setSize(w, h, false);
     composer?.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    bgMat.uniforms.res.value.set(w * dpr, h * dpr);
+    bgMat.uniforms.res.value.set(w * eff, h * eff);
   }
   resize();
   let resizeTimer = 0;
@@ -474,11 +482,21 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     listeners.forEach((fn) => fn(state));
 
     state.frames++;
-    state.slow = state.slow * 0.95 + dt * 0.05;
-    if (state.frames % 90 === 0 && state.slow > 0.026 && dpr > (lite ? 0.7 : 1)) {
-      qualityDpr = Math.max(lite ? 0.7 : 1, qualityDpr - 0.25);
-      dpr = Math.min(dpr, qualityDpr);
-      resize();
+    if (!(parked || idle)) {
+      // measure only full-rate frames: the deliberate 30 fps idle mode must not look like a slow GPU
+      state.slow = state.slow * 0.97 + dt * 0.03;
+      if (++state.fullFrames % 120 === 0) {
+        const floor = lite ? 1 : 1.25;
+        if (state.slow > 0.034 && qualityDpr > floor) { // sustained < ~30 fps: step the resolution down
+          qualityDpr = Math.max(floor, qualityDpr - 0.25);
+          dpr = Math.min(dpr, qualityDpr);
+          resize();
+        } else if (state.slow < 0.02 && qualityDpr < topDpr) { // comfortably fast again: sharpen back up
+          qualityDpr = Math.min(topDpr, qualityDpr + 0.25);
+          dpr = qualityDpr;
+          resize();
+        }
+      }
     }
   }
 
@@ -550,7 +568,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     setHighlight: (name) => { state.highlight = name; state.lastActive = performance.now(); },
     setProfile: (on) => { state.profile = on; if (!on) renderer.info.autoReset = true; },
     stats: () => ({
-      calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, dpr, qualityDpr,
+      calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, dpr: state.effDpr, qualityDpr,
       dof: !!(dofPass && dofPass.enabled), cpuMs: state.cpuMs, gpuMs: timer ? state.gpuMs : null,
       mode: now0() - state.lastMove < 500 ? 'scrolling' : now0() - state.lastActive > 1500 ? 'idle (30fps)' : 'active',
     }),
