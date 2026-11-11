@@ -51,8 +51,8 @@ const aboutFrames = ABOUT_FOCUS.map((part, i) => ({
 
 export const KEYFRAMES = [
   // HERO: assembled, front-on
-  { ...base, p: 0, cam: [0, 0.25, 7.6], target: [0, 0, 0], fov: 34, pos: [0, -0.75, 0], scale: 0.92, rot: REST_ROT, bg: hero, bokeh: 1.2, range: 5, bloom: 0.35, floaters: 0.8, follow: 1 },
-  { ...base, p: at('hero', 1), cam: [0, 0.2, 6.9], target: [0, 0, 0.2], fov: 34, pos: [0, -0.75, 0], scale: 0.92, rot: [0.08, -0.2, 0.03], bg: hero, split: 0.52, bokeh: 1.6, range: 4.5, bloom: 0.35, floaters: 1, follow: 1 },
+  { ...base, p: 0, cam: [0, 0.25, 7.6], target: [0, 0, 0], fov: 34, pos: [0, -0.75, 0], scale: 0.92, rot: REST_ROT, bg: hero, bokeh: 1.2, range: 6.5, bloom: 0.35, floaters: 0.8, follow: 1 },
+  { ...base, p: at('hero', 1), cam: [0, 0.2, 6.9], target: [0, 0, 0.2], fov: 34, pos: [0, -0.75, 0], scale: 0.92, rot: [0.08, -0.2, 0.03], bg: hero, split: 0.52, bokeh: 1.6, range: 6, bloom: 0.35, floaters: 1, follow: 1 },
 
   // TILT & SETTLE: turn to a 3/4 view and ease back so the whole object is visible
   { ...base, p: at('tilt', 1), cam: [0, 0.45, 10.5], target: [0, 0, 0.3], fov: 34, rot: THREE_QUARTER, bg: tilt, split: 0.46, bokeh: 1.2, range: 8, bloom: 0.4, floaters: 0.5, follow: 0.35 },

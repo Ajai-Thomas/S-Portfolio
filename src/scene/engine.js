@@ -447,7 +447,12 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
 
     if (dofPass) {
       dofPass.enabled = k.bokeh > 0.82; // exploded / parked views barely blur: skip the passes
-      dof.cocMaterial.focusDistance = camera.position.distanceTo(tgt);
+      // Early on, focus on the camera's lens barrel (not the abstract look-at point), blending back as the sequence starts
+      const wHero = 1 - smooth01((p - at('hero', 0.5)) / (at('tilt', 0.6) - at('hero', 0.5)));
+      let focusD = camera.position.distanceTo(tgt);
+      const lensPart = parts.get('lens_barrel_outer');
+      if (wHero > 0.001 && lensPart) { lensPart.group.getWorldPosition(vtmp); focusD = lerp(focusD, camera.position.distanceTo(vtmp), wHero); }
+      dof.cocMaterial.focusDistance = focusD;
       dof.cocMaterial.focusRange = k.range;
       dof.bokehScale = k.bokeh;
     }

@@ -530,12 +530,16 @@ html.pf-smooth { scroll-behavior: smooth; scroll-padding-top: 4rem; }
 .pf-workview__link { color: var(--pf-accent); justify-self: start; border-bottom: 1px solid var(--pf-accent); }
 
 
-/* Hero title legibility: soft glow behind the name, accent rule under it */
-.pf-3d .pf-hero__inner { isolation: isolate; }
-.pf-3d .pf-hero__inner::before {
-  content: ''; position: absolute; z-index: -1; inset: -18% -14%; pointer-events: none;
-  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--pf-bg) 78%, transparent) 0%, color-mix(in srgb, var(--pf-bg) 40%, transparent) 38%, transparent 68%);
+/* Hero title legibility: a soft glow behind the NAME only (it no longer darkens the camera), accent rule under it */
+.pf-3d .pf-hero__name { position: relative; isolation: isolate; text-shadow: 0 2px 26px rgba(0, 0, 0, 0.55), 0 0 2px rgba(0, 0, 0, 0.35); }
+.pf-3d .pf-hero__name::before {
+  content: ''; position: absolute; z-index: -1; inset: -14% -5%; pointer-events: none;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--pf-bg) 62%, transparent) 0%, color-mix(in srgb, var(--pf-bg) 28%, transparent) 45%, transparent 72%);
 }
-.pf-3d .pf-hero__name { text-shadow: 0 2px 26px rgba(0, 0, 0, 0.55), 0 0 2px rgba(0, 0, 0, 0.35); }
-.pf-root[data-theme='light'].pf-3d .pf-hero__name { text-shadow: 0 2px 26px rgba(255, 255, 255, 0.7), 0 0 2px rgba(255, 255, 255, 0.5); }
+.pf-3d .pf-hero__tag { text-shadow: 0 1px 14px rgba(0, 0, 0, 0.8), 0 0 3px rgba(0, 0, 0, 0.55); }
+.pf-root[data-theme='light'].pf-3d .pf-hero__name, .pf-root[data-theme='light'].pf-3d .pf-hero__tag { text-shadow: 0 2px 22px rgba(255, 255, 255, 0.8), 0 0 2px rgba(255, 255, 255, 0.6); }
 .pf-hero__tag::before { content: ''; display: block; width: 3.2rem; height: 2px; margin: 0 auto 1.1rem; background: var(--pf-accent); box-shadow: 0 0 14px var(--pf-glow); }
+
+/* SCROLL cue: out of the lens's way (bottom right) */
+.pf-scroll { left: auto; right: clamp(2.6rem, 6vw, 5rem); bottom: 4.2rem; transform: none; }
+@media (max-width: 520px) { .pf-scroll { right: 1.8rem; bottom: 3.4rem; } }
