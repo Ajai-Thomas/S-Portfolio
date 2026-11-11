@@ -1,7 +1,7 @@
 // Page chrome: nav, cursor, loader, film strip, section heading, modal.
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { NAV_ALIAS, SECTIONS, finePointer, reducedMotion } from './util';
+import { NAV_ALIAS, SECTIONS } from './util';
 
 export function Nav({ initials, theme, onToggleTheme, sections = SECTIONS }) {
   const [active, setActive] = useState('');
@@ -34,38 +34,6 @@ export function Nav({ initials, theme, onToggleTheme, sections = SECTIONS }) {
       </button>
     </header>
     </>
-  );
-}
-
-// Viewfinder-crosshair cursor (desktop only). Native cursor stays visible.
-export function Cursor() {
-  const ref = useRef(null);
-  useEffect(() => {
-    if (!finePointer() || reducedMotion()) return;
-    const el = ref.current;
-    let x = 0, y = 0, tx = 0, ty = 0, raf = 0;
-    const loop = () => {
-      x += (tx - x) * 0.25; y += (ty - y) * 0.25;
-      el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      // stop the loop once the ring has caught up; the next pointer move restarts it
-      raf = Math.abs(tx - x) > 0.1 || Math.abs(ty - y) > 0.1 ? requestAnimationFrame(loop) : 0;
-    };
-    const move = (e) => {
-      tx = e.clientX; ty = e.clientY;
-      if (!raf) raf = requestAnimationFrame(loop);
-      const t = e.target;
-      el.dataset.hidden = t.closest?.('.pf-gallery') ? 'true' : 'false';
-      el.dataset.mode = t.closest?.('[data-cursor="view"], video, iframe')
-        ? 'view'
-        : t.closest?.('a, button, input, textarea') ? 'link' : 'idle';
-    };
-    window.addEventListener('pointermove', move, { passive: true });
-    return () => { window.removeEventListener('pointermove', move); cancelAnimationFrame(raf); };
-  }, []);
-  return (
-    <div ref={ref} className="pf-cursor" data-mode="idle" data-hidden="true" aria-hidden="true">
-      <i /><i /><i /><i /><b />
-    </div>
   );
 }
 

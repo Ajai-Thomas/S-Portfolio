@@ -5,7 +5,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import content from './content.json';
 import './portfolio.css';
 import { SECTIONS, reducedMotion, resolveAlbum, useReveal, useWithin } from './util';
-import { ApertureLoader, Cursor, FilmStrip, Nav, SectionHead } from './Chrome';
+import { ApertureLoader, FilmStrip, Nav, SectionHead } from './Chrome';
 import Hero from './Hero';
 import Journey from './Journey';
 import Albums from './Albums';
@@ -85,7 +85,6 @@ export default function Home({ galleryImages }) {
     <div ref={root} className={`pf-root ${is3d ? 'pf-3d' : 'pf-static'}`} data-theme={theme}>
       <a className="pf-skip" href="#about">Skip to content</a>
       {mode !== 'static' && <ApertureLoader progress={progress} done={mode === 'ready'} />}
-      <Cursor />
       <Nav initials={content.site.initials} theme={theme} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} sections={SECTIONS} />
       {is3d && (
         <Suspense fallback={null}>
