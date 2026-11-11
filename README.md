@@ -129,7 +129,7 @@ Edit numbers only:
 `KEYFRAMES` set the camera position/target, FOV, model rotation/position/scale, background colours, depth-of-field, bloom, fog, floating props and mouse-follow for each moment. A keyframe `target` can be `{ part: 'sensor' }` to follow a part, and `cam` can be `{ rel: [x, y, z] }` (an offset from the target); the About keyframes use this to park on a different part per timeline entry. Field list is documented at the top of the file.
 
 ### Debug mode: `?debug=1`
-Open the site with `?debug=1` for a lil-gui panel with a **progress slider** (scrub by hand; untick "follow scroll" to go back to normal), an on-screen **FPS counter**, and a toggle that shows every **part name and anchor** on screen.
+Open the site with `?debug=1` for a lil-gui panel with a **progress slider** (scrub by hand; untick "follow scroll" to go back to normal), a toggle that shows every **part name and anchor** on screen, and a live readout of **FPS, draw calls, triangles, resolution (current/ceiling), whether depth of field is on, the render mode (scrolling / active / idle) and CPU and GPU frame time** (GPU time needs a browser that exposes `EXT_disjoint_timer_query`).
 
 ### Swap the camera model
 The default camera is built from primitives in `src/scene/cameraModel.js` (no external asset, so no licence to credit). To use a GLB instead, put it in `public/models/` (Draco or meshopt compression is supported) and set `MODEL_URL = '/models/camera.glb'` in `src/scene/config.js`. **The GLB must be a multi-part model with one node per part, named exactly like the parts in `explodeConfig.js`** (a single fused mesh will not work). Each node's own position/rotation is used as its assembled pose, with +Z as the lens axis. If any node is missing the procedural camera is used and a console warning lists the expected names. Then retune `peel` and `z` values in `explodeConfig.js` for the new proportions. Free multi-part sources: Sketchfab and Poly Pizza (filter to CC0 / CC-BY). **If you use a CC-BY model, credit it here:**
@@ -140,6 +140,8 @@ The default camera is built from primitives in `src/scene/cameraModel.js` (no ex
 With `prefers-reduced-motion`, the tumbling, drifting, dust, shake and flash are skipped: outer parts crossfade out, the inner assembly switches between assembled and exploded, and labels fade in. The camera still follows your scroll. Without WebGL the page falls back to a static hero and stacked sections.
 
 ### Performance notes
+Rendering cost is kept down without lowering the look: depth of field only runs when its blur is visible; resolution drops to 1.25x while you scroll quickly and returns to full sharpness half a second after you stop; the scene renders at 30 fps when idle or parked behind the Works sections; label positions are only calculated while labels are visible; and the cursor/flare lights are switched on only in their moments (all shader variants are precompiled so that never hitches).
+
 Pixel ratio is capped at 2 (1.25 on phones/touch), phones drop depth of field and chromatic aberration and use fewer floating props, rendering pauses when the tab is hidden, resources are disposed on unmount, and the 3D chunk loads after first paint. If frames run slow the engine lowers resolution automatically. On phones, tilt follows touch-drag (and the gyroscope on Android; iOS needs a permission prompt that isn't wired up).
 
 ## Admin (`/admin`)

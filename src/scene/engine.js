@@ -14,6 +14,7 @@ import { buildCameraModel } from './cameraModel';
 import { buildFloaters } from './floaters';
 
 const lerp = (a, b, t) => a + (b - a) * t;
+const now0 = () => performance.now();
 const lerpArr = (a, b, t) => a.map((v, i) => lerp(v, b[i], t));
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const smooth = (t) => t * t * (3 - 2 * t);
@@ -69,6 +70,8 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
   const tick = (v) => { onProgress(v); return new Promise((r) => setTimeout(r, 0)); };
   const maxDpr = lite ? 1 : 2;
   let dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
+  let qualityDpr = dpr; // the sharpest ratio allowed; the adaptive logic may lower it on slow GPUs
+  const MOVING_DPR = 1.25; // while scrolling fast the image is in motion anyway: render lighter
 
   // 1 · renderer ───────────────────────────────────────────────────────────
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: lite, powerPreference: 'high-performance', alpha: false, stencil: false });
@@ -234,7 +237,8 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
   const reB = at('pullback', 0.8);
 
   // ── state ────────────────────────────────────────────────────────────────
-  const state = { progress: 0, shown: 0, prevShown: 0, era: 0, px: 0, py: 0, sx: 0, sy: 0, flash: 0, theme, running: false, last: 0, slow: 0, frames: 0, covered: false, highlight: null, hlG: 0, anno: 0 };
+  const state = { progress: 0, shown: 0, prevShown: 0, era: 0, px: 0, py: 0, sx: 0, sy: 0, flash: 0, theme, running: false, last: 0, slow: 0, frames: 0, covered: false, highlight: null, hlG: 0, anno: 0,
+    lastActive: 0, lastMove: 0, lastResChange: 0, skip: false, profile: false, cpuMs: 0, gpuMs: 0 };
   const colA = new THREE.Color(), colB = new THREE.Color();
   const tmpA = new THREE.Color(), tmpB = new THREE.Color();
   const camPos = new THREE.Vector3(), tgt = new THREE.Vector3(), tA = new THREE.Vector3(), tB = new THREE.Vector3(), cA = new THREE.Vector3(), cB = new THREE.Vector3();
@@ -352,8 +356,12 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
 
   function frame(now) {
     if (state.covered) { state.last = now; return; }
-    // parked behind the Works sections nothing moves quickly: draw every other frame
-    if (state.shown >= at('works', 0) && state.shown < at('contact', 0) && (state.skip = !state.skip)) { return; }
+    // Parked behind the Works sections, or nothing has moved for 1.5s: every other frame is plenty
+    const parked = state.shown >= at('works', 0) && state.shown < at('contact', 0);
+    const idle = now - state.lastActive > 1500;
+    if ((parked || idle) && (state.skip = !state.skip)) { return; }
+    const cpuStart = state.profile ? performance.now() : 0;
+    if (state.profile) { renderer.info.autoReset = false; renderer.info.reset(); }
     const dt = Math.min(0.05, (now - state.last) / 1000 || 0.016);
     state.last = now;
     const time = now / 1000;
@@ -425,6 +433,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     updateDust(p);
 
     if (dofPass) {
+      dofPass.enabled = k.bokeh > 0.82; // exploded / parked views barely blur: skip the passes
       dof.cocMaterial.focusDistance = camera.position.distanceTo(tgt);
       dof.cocMaterial.focusRange = k.range;
       dof.bokehScale = k.bokeh;
@@ -434,14 +443,27 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
       chroma.offset.set(0.0005 + state.flash * 0.004, 0.0005 + state.flash * 0.004);
     }
 
+    if (!lite) {
+      cursorLight.visible = p < at('tilt', 1);
+      if (flare) flare.visible = p > EVENTS.flare[0] - 0.01 && p < EVENTS.flare[1] + 0.01;
+    }
+
+    // dynamic resolution: lighter while scrolling, full sharpness once it settles
+    if (!lite && !reduced) {
+      const target = now - state.lastMove < 500 ? Math.min(qualityDpr, MOVING_DPR) : qualityDpr;
+      if (target !== dpr && now - state.lastResChange > 350) { dpr = target; state.lastResChange = now; resize(); }
+    }
+
+    if (state.profile) gpuBegin();
     if (composer) composer.render(dt); else renderer.render(scene, camera);
+    if (state.profile) { gpuEnd(); gpuPoll(); state.cpuMs = state.cpuMs * 0.9 + (performance.now() - cpuStart) * 0.1; }
 
     // annotation weight + projected anchors for the leader lines (this frame's final camera)
     state.anno = smooth01((p - ANNOTATE.in[0]) / (ANNOTATE.in[1] - ANNOTATE.in[0])) * (1 - smooth01((p - ANNOTATE.out[0]) / (ANNOTATE.out[1] - ANNOTATE.out[0])));
-    if (state.anno > 0.001 || listeners.size) {
+    if (state.anno > 0.001 || window.__pfDebugAnchors) {
       camera.updateMatrixWorld();
       for (const part of parts.values()) {
-        if (!part.def.label && !listeners.size) continue;
+        if (!part.def.label && !window.__pfDebugAnchors) continue;
         const a = anchors[part.def.name] || (anchors[part.def.name] = {});
         for (const key2 of ['c', 'u', 'd', 'l', 'r']) {
           part.probes[key2].getWorldPosition(vtmp);
@@ -455,9 +477,33 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     state.frames++;
     state.slow = state.slow * 0.95 + dt * 0.05;
     if (state.frames % 90 === 0 && state.slow > 0.026 && dpr > (lite ? 0.7 : 1)) {
-      dpr = Math.max(lite ? 0.7 : 1, dpr - 0.25);
+      qualityDpr = Math.max(lite ? 0.7 : 1, qualityDpr - 0.25);
+      dpr = Math.min(dpr, qualityDpr);
       resize();
     }
+  }
+
+  // GPU frame time via EXT_disjoint_timer_query (where the browser allows it)
+  const glc = renderer.getContext();
+  const timer = glc.getExtension('EXT_disjoint_timer_query_webgl2');
+  let gpuQuery = null, gpuPending = null;
+  function gpuBegin() {
+    if (!timer || gpuPending) return;
+    gpuQuery = glc.createQuery();
+    glc.beginQuery(timer.TIME_ELAPSED_EXT, gpuQuery);
+  }
+  function gpuEnd() {
+    if (!timer || !gpuQuery) return;
+    glc.endQuery(timer.TIME_ELAPSED_EXT);
+    gpuPending = gpuQuery;
+    gpuQuery = null;
+  }
+  function gpuPoll() {
+    if (!gpuPending) return;
+    const ready = glc.getQueryParameter(gpuPending, glc.QUERY_RESULT_AVAILABLE);
+    const disjoint = glc.getParameter(timer.GPU_DISJOINT_EXT);
+    if (ready && !disjoint) state.gpuMs = state.gpuMs * 0.9 + (glc.getQueryParameter(gpuPending, glc.QUERY_RESULT) / 1e6) * 0.1;
+    if (ready || disjoint) { glc.deleteQuery(gpuPending); gpuPending = null; }
   }
 
   function start() {
@@ -473,6 +519,14 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
   const onVis = () => (document.hidden ? stop() : start());
   document.addEventListener('visibilitychange', onVis);
 
+  if (!lite) {
+    for (const [c, f] of [[true, false], [false, true], [false, false]]) {
+      cursorLight.visible = c;
+      if (flare) flare.visible = f;
+      renderer.compile(scene, camera);
+    }
+  }
+  state.lastActive = performance.now(); // start in the active state so the first frames are full rate
   frame(performance.now());
   await tick(1);
 
@@ -484,12 +538,23 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     internals: { scene, composer, renderer, camera, dust, flare, bgMat, model, parts },
     debugInfo: () => ({ cam: camera.position.toArray(), fov: camera.fov, aspect: camera.aspect, colA: colA.getHexString(), colB: colB.getHexString(), split: bgMat.uniforms.split.value, visible: [...parts.values()].filter((q) => q.group.visible).length, res: bgMat.uniforms.res.value.toArray(), nan: Number.isNaN(camera.position.x) }),
     partNames: PARTS.map((d) => d.name),
-    setProgress: (p) => { state.progress = p; },
+    setProgress: (p) => {
+      const d = Math.abs(p - state.progress);
+      if (d > 1e-5) state.lastActive = performance.now();
+      if (d > 3e-4) state.lastMove = performance.now();
+      state.progress = p;
+    },
     setEra: (e) => { state.era = e; },
-    setPointer: (x, y) => { if (!reduced) { state.px = x; state.py = y; } },
+    setPointer: (x, y) => { if (!reduced) { if (Math.abs(x - state.px) + Math.abs(y - state.py) > 0.004) state.lastActive = performance.now(); state.px = x; state.py = y; } },
     setTheme: (t) => { state.theme = t; },
     setCovered: (c) => { state.covered = c; },
-    setHighlight: (name) => { state.highlight = name; },
+    setHighlight: (name) => { state.highlight = name; state.lastActive = performance.now(); },
+    setProfile: (on) => { state.profile = on; if (!on) renderer.info.autoReset = true; },
+    stats: () => ({
+      calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, dpr, qualityDpr,
+      dof: !!(dofPass && dofPass.enabled), cpuMs: state.cpuMs, gpuMs: timer ? state.gpuMs : null,
+      mode: now0() - state.lastMove < 500 ? 'scrolling' : now0() - state.lastActive > 1500 ? 'idle (30fps)' : 'active',
+    }),
     pulse: () => {}, // kept for API compatibility: no brightness flash any more
     onFrame: (fn) => { listeners.add(fn); return () => listeners.delete(fn); },
     dispose() {

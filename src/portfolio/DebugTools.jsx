@@ -9,10 +9,12 @@ export default function DebugTools({ engineRef, ready }) {
     let gui = null;
     let off = () => {};
     let alive = true;
+    const eng = engineRef.current;
     (async () => {
       const { default: GUI } = await import('lil-gui');
       if (!alive) return;
       const engine = engineRef.current;
+      engine.setProfile(true);
       const opts = { live: true, progress: 0, showNames: false };
       gui = new GUI({ title: 'Camera sequence' });
       let liveCtl = null;
@@ -22,7 +24,7 @@ export default function DebugTools({ engineRef, ready }) {
         liveCtl?.updateDisplay();
       });
       liveCtl = gui.add(opts, 'live').name('follow scroll').onChange((v) => { if (v) window.__pfProgress = undefined; });
-      gui.add(opts, 'showNames').name('part names + anchors').onChange((v) => { namesEl.current.style.display = v ? 'block' : 'none'; });
+      gui.add(opts, 'showNames').name('part names + anchors').onChange((v) => { window.__pfDebugAnchors = v; namesEl.current.style.display = v ? 'block' : 'none'; });
 
       let frames = 0, t0 = performance.now();
       const spans = {};
@@ -36,7 +38,8 @@ export default function DebugTools({ engineRef, ready }) {
         frames++;
         const now = performance.now();
         if (now - t0 > 500) {
-          fpsEl.current.textContent = `${Math.round((frames * 1000) / (now - t0))} FPS · p=${st.shown.toFixed(3)}`;
+          const s = engine.stats();
+          fpsEl.current.textContent = `${Math.round((frames * 1000) / (now - t0))} FPS · p=${st.shown.toFixed(3)} · ${s.calls} calls · ${(s.triangles / 1000).toFixed(1)}k tris · DPR ${s.dpr.toFixed(2)}/${s.qualityDpr.toFixed(2)} · DOF ${s.dof ? 'on' : 'off'} · ${s.mode} · CPU ${s.cpuMs.toFixed(1)}ms${s.gpuMs === null ? '' : ` · GPU ${s.gpuMs.toFixed(1)}ms`}`;
           frames = 0;
           t0 = now;
         }
@@ -49,7 +52,7 @@ export default function DebugTools({ engineRef, ready }) {
         }
       });
     })();
-    return () => { alive = false; off(); gui?.destroy(); window.__pfProgress = undefined; };
+    return () => { alive = false; off(); gui?.destroy(); window.__pfProgress = undefined; window.__pfDebugAnchors = false; eng?.setProfile(false); };
   }, [engineRef, ready]);
   return (
     <>
