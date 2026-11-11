@@ -140,7 +140,14 @@ The default camera is built from primitives in `src/scene/cameraModel.js` (no ex
 With `prefers-reduced-motion`, the tumbling, drifting, dust, shake and flash are skipped: outer parts crossfade out, the inner assembly switches between assembled and exploded, and labels fade in. The camera still follows your scroll. Without WebGL the page falls back to a static hero and stacked sections.
 
 ### Performance notes
-Rendering cost is kept down without lowering the look: depth of field only runs when its blur is visible; resolution drops to 1.25x while you scroll quickly and returns to full sharpness half a second after you stop; the scene renders at 30 fps when idle or parked behind the Works sections; label positions are only calculated while labels are visible; and the cursor/flare lights are switched on only in their moments (all shader variants are precompiled so that never hitches).
+Rendering cost and memory are kept down without lowering the look:
+- **GPU memory:** pixel ratio is capped at 1.5 on desktop (1 on phones); the 4x multisampling on the high-precision buffer (the largest allocation, ~150 MB at retina size) is replaced by FXAA; depth of field and bloom use smaller buffers.
+- **Work only when it shows:** depth of field runs only when its blur is visible; the scene renders at 30 fps when idle or parked behind the Works sections, and stops entirely while a modal covers the page; label positions are only calculated while labels are visible; the cursor and hero parallax loops stop when nothing is moving.
+- **The 3D gallery** is mounted only while it is near the viewport and unmounted when far away, which frees its GPU layers and image textures.
+- **No live blur over the canvas:** the nav and text panels use solid translucent backgrounds instead of `backdrop-filter`, and the CSS film grain is static (the 3D scene has its own animated grain).
+- **Weak devices:** software renderers (SwiftShader, llvmpipe) and devices reporting 4 GB of memory or less start on the light render path automatically (`?quality=full` or `?quality=lite` forces either).
+- **If the browser kills the GL context** (out of memory), the page falls back to the static layout instead of leaving a dead canvas.
+- The cursor light and separation flare are switched on only in their moments, with shader variants precompiled so toggling never hitches.
 
 Pixel ratio is capped at 2 (1.25 on phones/touch), phones drop depth of field and chromatic aberration and use fewer floating props, rendering pauses when the tab is hidden, resources are disposed on unmount, and the 3D chunk loads after first paint. If frames run slow the engine lowers resolution automatically. On phones, tilt follows touch-drag (and the gyroscope on Android; iOS needs a permission prompt that isn't wired up).
 

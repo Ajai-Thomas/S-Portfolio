@@ -6,7 +6,7 @@ import gsap from 'gsap';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import {
   EffectComposer, RenderPass, EffectPass, BloomEffect, DepthOfFieldEffect, NoiseEffect,
-  VignetteEffect, ChromaticAberrationEffect, ToneMappingEffect, ToneMappingMode, BlendFunction,
+  VignetteEffect, ChromaticAberrationEffect, ToneMappingEffect, ToneMappingMode, BlendFunction, FXAAEffect,
 } from 'postprocessing';
 import { KEYFRAMES, FLOATER_COUNT, MODEL_URL } from './config';
 import { at, SECTION_WEIGHTS as W, TIMING as T, EASE, ANNOTATE, EVENTS, BREAKPOINTS as BP, PARTS, PARTICLES } from './explodeConfig';
@@ -66,18 +66,19 @@ const DUST_FRAG = `
 varying float vA;
 void main(){ vec2 c = gl_PointCoord - 0.5; float d = length(c); if (d > 0.5) discard; gl_FragColor = vec4(vec3(1.0, 0.82, 0.6) * 2.0, vA * (1.0 - d * 1.6)); }`;
 
-export async function createScene({ canvas, lite = false, reduced = false, theme = 'dark', photos = [], onProgress = () => {}, onShutter = () => {} }) {
+export async function createScene({ canvas, lite = false, reduced = false, theme = 'dark', photos = [], onProgress = () => {}, onShutter = () => {}, onLost = () => {} }) {
   const tick = (v) => { onProgress(v); return new Promise((r) => setTimeout(r, 0)); };
-  const maxDpr = lite ? 1 : 2;
+  const maxDpr = lite ? 1 : 1.5;
   let dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
   let qualityDpr = dpr; // the sharpest ratio allowed; the adaptive logic may lower it on slow GPUs
-  const MOVING_DPR = 1.25; // while scrolling fast the image is in motion anyway: render lighter
 
   // 1 · renderer ───────────────────────────────────────────────────────────
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: lite, powerPreference: 'high-performance', alpha: false, stencil: false });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: lite, powerPreference: 'default', alpha: false, stencil: false });
   renderer.setPixelRatio(dpr);
   renderer.setSize(window.innerWidth, window.innerHeight, false);
   if (lite) renderer.toneMapping = THREE.NeutralToneMapping; // phones skip post-processing
+  const onCtxLost = (e) => { e.preventDefault(); stop(); onLost(); };
+  canvas.addEventListener('webglcontextlost', onCtxLost);
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x222222, 0.03);
   const camera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.1, 80);
@@ -194,10 +195,10 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
   // 6 · post-processing (desktop only) ─────────────────────────────────────
   let composer = null, dof = null, dofPass = null, bloom = null, chroma = null;
   if (!lite) {
-    composer = new EffectComposer(renderer, { multisampling: 4, frameBufferType: THREE.HalfFloatType });
+    composer = new EffectComposer(renderer, { multisampling: 0, frameBufferType: THREE.HalfFloatType }); // MSAA 4x on a half-float target costs ~150 MB at retina size
     composer.addPass(new RenderPass(scene, camera));
-    dof = new DepthOfFieldEffect(camera, { focusDistance: 7, focusRange: 5, bokehScale: 1, resolutionScale: 0.5 });
-    bloom = new BloomEffect({ intensity: 0.4, luminanceThreshold: 0.78, luminanceSmoothing: 0.3, mipmapBlur: true });
+    dof = new DepthOfFieldEffect(camera, { focusDistance: 7, focusRange: 5, bokehScale: 1, resolutionScale: 0.4 });
+    bloom = new BloomEffect({ intensity: 0.4, luminanceThreshold: 0.78, luminanceSmoothing: 0.3, mipmapBlur: true, levels: 5 });
     chroma = new ChromaticAberrationEffect({ offset: new THREE.Vector2(0.0006, 0.0006), radialModulation: true, modulationOffset: 0.3 });
     const grain = new NoiseEffect({ blendFunction: BlendFunction.OVERLAY, premultiply: true });
     grain.blendMode.opacity.value = 0.22;
@@ -206,7 +207,9 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     dofPass = new EffectPass(camera, dof);
     composer.addPass(dofPass);
     composer.addPass(new EffectPass(camera, bloom));
-    composer.addPass(new EffectPass(camera, chroma, tone, grain, vignette));
+    composer.addPass(new EffectPass(camera, chroma, tone));
+    composer.addPass(new EffectPass(camera, new FXAAEffect())); // cheap antialiasing (replaces MSAA)
+    composer.addPass(new EffectPass(camera, grain, vignette));
   }
   await tick(0.9);
 
@@ -351,11 +354,13 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     bgMat.uniforms.res.value.set(w * dpr, h * dpr);
   }
   resize();
-  window.addEventListener('resize', resize);
-  window.addEventListener('orientationchange', resize);
+  let resizeTimer = 0;
+  const onResize = () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 150); };
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', onResize);
 
   function frame(now) {
-    if (state.covered) { state.last = now; return; }
+    if (state.covered || +document.documentElement.dataset.pfModal > 0) { state.last = now; return; } // hidden behind a modal
     // Parked behind the Works sections, or nothing has moved for 1.5s: every other frame is plenty
     const parked = state.shown >= at('works', 0) && state.shown < at('contact', 0);
     const idle = now - state.lastActive > 1500;
@@ -446,12 +451,6 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     if (!lite) {
       cursorLight.visible = p < at('tilt', 1);
       if (flare) flare.visible = p > EVENTS.flare[0] - 0.01 && p < EVENTS.flare[1] + 0.01;
-    }
-
-    // dynamic resolution: lighter while scrolling, full sharpness once it settles
-    if (!lite && !reduced) {
-      const target = now - state.lastMove < 500 ? Math.min(qualityDpr, MOVING_DPR) : qualityDpr;
-      if (target !== dpr && now - state.lastResChange > 350) { dpr = target; state.lastResChange = now; resize(); }
     }
 
     if (state.profile) gpuBegin();
@@ -559,8 +558,10 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     onFrame: (fn) => { listeners.add(fn); return () => listeners.delete(fn); },
     dispose() {
       stop();
-      window.removeEventListener('resize', resize);
-      window.removeEventListener('orientationchange', resize);
+      clearTimeout(resizeTimer);
+      canvas.removeEventListener('webglcontextlost', onCtxLost);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
       document.removeEventListener('visibilitychange', onVis);
       listeners.clear();
       floaters.dispose();

@@ -47,10 +47,12 @@ export function Cursor() {
     const loop = () => {
       x += (tx - x) * 0.25; y += (ty - y) * 0.25;
       el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      raf = requestAnimationFrame(loop);
+      // stop the loop once the ring has caught up; the next pointer move restarts it
+      raf = Math.abs(tx - x) > 0.1 || Math.abs(ty - y) > 0.1 ? requestAnimationFrame(loop) : 0;
     };
     const move = (e) => {
       tx = e.clientX; ty = e.clientY;
+      if (!raf) raf = requestAnimationFrame(loop);
       const t = e.target;
       el.dataset.hidden = t.closest?.('.pf-gallery') ? 'true' : 'false';
       el.dataset.mode = t.closest?.('[data-cursor="view"], video, iframe')
@@ -58,7 +60,6 @@ export function Cursor() {
         : t.closest?.('a, button, input, textarea') ? 'link' : 'idle';
     };
     window.addEventListener('pointermove', move, { passive: true });
-    raf = requestAnimationFrame(loop);
     return () => { window.removeEventListener('pointermove', move); cancelAnimationFrame(raf); };
   }, []);
   return (
@@ -126,8 +127,15 @@ export function Modal({ label, onClose, children, className = '' }) {
     const prev = document.activeElement;
     const root = ref.current;
     document.body.style.overflow = 'hidden';
+    const html = document.documentElement; // tells the 3D scene it is hidden: it stops drawing
+    html.dataset.pfModal = String((+html.dataset.pfModal || 0) + 1);
     (root.querySelector('[data-autofocus]') || root).focus();
-    return () => { document.body.style.overflow = ''; prev?.focus?.(); };
+    return () => {
+      document.body.style.overflow = '';
+      const n = (+html.dataset.pfModal || 1) - 1;
+      if (n <= 0) delete html.dataset.pfModal; else html.dataset.pfModal = String(n);
+      prev?.focus?.();
+    };
   }, []);
   const onKeyDown = (e) => {
     if (e.key === 'Escape') { e.stopPropagation(); onClose(); return; }

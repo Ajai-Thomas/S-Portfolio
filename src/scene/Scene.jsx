@@ -1,6 +1,17 @@
 // Fixed full-screen canvas. Lazy-loads the engine (and three.js) after first paint.
 import { useEffect, useRef } from 'react';
 
+// Software renderers (SwiftShader, llvmpipe) and low-memory devices get the light render path.
+function weakDevice() {
+  try {
+    const c = document.createElement('canvas');
+    const gl = c.getContext('webgl2');
+    const ext = gl && gl.getExtension('WEBGL_debug_renderer_info');
+    const name = ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : '';
+    return /swiftshader|llvmpipe|software|microsoft basic/i.test(name) || (navigator.deviceMemory && navigator.deviceMemory <= 4);
+  } catch { return false; }
+}
+
 function hasWebGL() {
   try {
     const c = document.createElement('canvas');
@@ -17,13 +28,15 @@ export default function Scene({ theme, photos, engineRef, onProgress, onReady, o
     if (!hasWebGL()) { onFallback(); return; }
     let engine = null;
     let cancelled = false;
-    const lite = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 760;
+    // ?quality=full or ?quality=lite overrides the automatic choice (handy for testing)
+    const forced = new URLSearchParams(window.location.search).get('quality');
+    const lite = forced ? forced === 'lite' : window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 760 || weakDevice();
 
     const boot = async () => {
       try {
         const { createScene } = await import('./engine');
         const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const e = await createScene({ canvas: canvas.current, lite, reduced, theme: themeRef.current, photos, onProgress, onShutter });
+        const e = await createScene({ canvas: canvas.current, lite, reduced, theme: themeRef.current, photos, onProgress, onShutter, onLost: onFallback });
         if (cancelled) { e.dispose(); return; }
         engine = e;
         engineRef.current = e;

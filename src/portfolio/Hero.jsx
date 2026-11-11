@@ -31,6 +31,7 @@ export default function Hero({ name, tagline, role, location, fallback }) {
       const r = el.getBoundingClientRect();
       tx = (e.clientX - r.left) / r.width;
       ty = (e.clientY - r.top) / r.height;
+      if (!raf) raf = requestAnimationFrame(loop);
       const now = performance.now();
       if (now - last > 80) {
         last = now;
@@ -46,10 +47,9 @@ export default function Hero({ name, tagline, role, location, fallback }) {
       y += (ty - y) * 0.07;
       el.style.setProperty('--mx', x.toFixed(3));
       el.style.setProperty('--my', y.toFixed(3));
-      raf = requestAnimationFrame(loop);
+      raf = Math.abs(tx - x) > 0.0005 || Math.abs(ty - y) > 0.0005 ? requestAnimationFrame(loop) : 0;
     };
     el.addEventListener('pointermove', move);
-    raf = requestAnimationFrame(loop);
     const shutter = setInterval(() => {
       setFrame((f) => (f % 36) + 1);
     }, 9000);

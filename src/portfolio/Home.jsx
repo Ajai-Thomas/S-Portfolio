@@ -4,7 +4,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import content from './content.json';
 import './portfolio.css';
-import { SECTIONS, reducedMotion, resolveAlbum, useNear, useReveal } from './util';
+import { SECTIONS, reducedMotion, resolveAlbum, useReveal, useWithin } from './util';
 import { ApertureLoader, Cursor, FilmStrip, Nav, SectionHead } from './Chrome';
 import Hero from './Hero';
 import Journey from './Journey';
@@ -37,7 +37,7 @@ export default function Home({ galleryImages }) {
   const debug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
   const flowRef = useRef(null);
   const [progress, setProgress] = useState(0);
-  const nearGallery = useNear(galleryBox);
+  const nearGallery = useWithin(galleryBox); // mounted only while near the viewport
   const sanity = useSanityPortfolio();
   // Albums/videos come from Sanity; content.json is the placeholder fallback.
   const albums = (sanity.albums.length ? sanity.albums : sanity.loaded ? content.albums : []).map(resolveAlbum);

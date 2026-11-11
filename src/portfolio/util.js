@@ -77,3 +77,17 @@ export function useNear(ref, margin = '600px') {
   }, [ref, near, margin]);
   return near;
 }
+
+// True while an element is within `margin` of the viewport; goes false again once it is far away.
+export function useWithin(ref, margin = '150% 0px') {
+  const [within, setWithin] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    if (!('IntersectionObserver' in window)) { setWithin(true); return undefined; }
+    const io = new IntersectionObserver(([e]) => setWithin(e.isIntersecting), { rootMargin: margin });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ref, margin]);
+  return within;
+}
