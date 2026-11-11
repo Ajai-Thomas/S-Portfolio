@@ -527,3 +527,18 @@ html.pf-smooth { scroll-behavior: smooth; scroll-padding-top: 4rem; }
 /* SCROLL cue: out of the lens's way (bottom right) */
 .pf-scroll { left: auto; right: clamp(2.6rem, 6vw, 5rem); bottom: 4.2rem; transform: none; }
 @media (max-width: 520px) { .pf-scroll { right: 1.8rem; bottom: 3.4rem; } }
+
+
+/* ───────── Light theme polish ───────── */
+.pf-root[data-theme='light'] .pf-phase,
+.pf-root[data-theme='light'] .pf-journey__bio,
+.pf-root[data-theme='light'] .pf-journey__head { text-shadow: 0 1px 14px rgba(255, 255, 255, 0.85); }
+.pf-root[data-theme='light'] .pf-anno__label button { text-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 2px rgba(255, 255, 255, 0.8); }
+.pf-root[data-theme='light'] .pf-anno__line { stroke: rgba(26, 23, 20, 0.7); }
+.pf-root[data-theme='light'] .pf-scrub { background: rgba(247, 243, 235, 0.92); color: #1a1714; box-shadow: 0 6px 24px rgba(60, 40, 20, 0.18); border: 1px solid rgba(26, 23, 20, 0.12); }
+.pf-root[data-theme='light'] .pf-scrub__ticks { background: repeating-linear-gradient(90deg, rgba(26, 23, 20, 0.45) 0 1px, transparent 1px 8px), repeating-linear-gradient(90deg, rgba(26, 23, 20, 0.85) 0 1px, transparent 1px 40px); background-size: 8px 7px, 40px 12px; background-repeat: repeat-x; background-position: 0 100%, 0 100%; }
+.pf-root[data-theme='light'] .pf-scrub__labels { color: rgba(26, 23, 20, 0.6); }
+.pf-root[data-theme='light'] .pf-journey__rail { background: rgba(26, 23, 20, 0.16); }
+.pf-root[data-theme='light'] .pf-nav { box-shadow: 0 1px 0 rgba(26, 23, 20, 0.08); }
+.pf-root[data-theme='light'] .pf-journey__list > li { box-shadow: 0 10px 30px rgba(60, 40, 20, 0.12); }
+.pf-root[data-theme='light']:not(.pf-modal-wrap)::after { background: radial-gradient(ellipse at center, transparent 62%, rgba(60, 40, 20, 0.08) 100%); }

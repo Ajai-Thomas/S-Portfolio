@@ -25,13 +25,13 @@ export { SECTION_WEIGHTS };
 // explodeConfig.js. If any node is missing the procedural camera is used instead.
 export const MODEL_URL = null;
 
-const hero = { dark: ['#3a2d33', '#243044'], light: ['#f4d8cf', '#cbd8ea'] };
-const tilt = { dark: ['#2b2a3d', '#16303a'], light: ['#e8d3e6', '#bfe0e3'] };
-const eraA = { dark: ['#332a22', '#1d2b31'], light: ['#f3e0c6', '#c9dcd4'] };
-const eraB = { dark: ['#2a2f3b', '#2c2230'], light: ['#d9e0f0', '#ecd2dc'] };
-const eraC = { dark: ['#2f2a20', '#263029'], light: ['#f0e4bd', '#cde3c9'] };
-const works = { dark: ['#100f0e', '#17140f'], light: ['#cfc5b3', '#bdb2a0'] };
-const outro = { dark: ['#3a2622', '#1f2431'], light: ['#f6d9c8', '#d3dff2'] };
+const hero = { dark: ['#3a2d33', '#243044'], light: ['#f1dfd3', '#d2dbe6'] };
+const tilt = { dark: ['#2b2a3d', '#16303a'], light: ['#ece0da', '#cfdde0'] };
+const eraA = { dark: ['#332a22', '#1d2b31'], light: ['#f0e3cf', '#d0dcd3'] };
+const eraB = { dark: ['#2a2f3b', '#2c2230'], light: ['#dfe3ea', '#e9d9d6'] };
+const eraC = { dark: ['#2f2a20', '#263029'], light: ['#ece3c9', '#d3e0cd'] };
+const works = { dark: ['#100f0e', '#17140f'], light: ['#ddd5c7', '#cfc6b5'] };
+const outro = { dark: ['#3a2622', '#1f2431'], light: ['#f2dccd', '#d4dde9'] };
 
 const REST_ROT = [0.1, -0.32, 0.05];
 const THREE_QUARTER = [0.25, -0.78, 0.05]; // ~45° diagonal, like the lens in the reference

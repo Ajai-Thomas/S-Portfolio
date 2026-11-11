@@ -40,6 +40,7 @@ export function buildCameraModel({ lite = false } = {}) {
       ? new THREE.MeshStandardMaterial({ color: 0x03050a, metalness: 0.6, roughness: 0.08, envMapIntensity: 2.2, emissive: 0x0a1a33, emissiveIntensity: 0.5 })
       : new THREE.MeshPhysicalMaterial({ color: 0x010206, metalness: 0.2, roughness: 0.03, clearcoat: 1, clearcoatRoughness: 0.02, iridescence: 0.5, iridescenceIOR: 1.5, envMapIntensity: 3.2, emissive: 0x0a1a33, emissiveIntensity: 0.6 }),
   };
+  M.glass.userData.tone = 'glass'; M.black.userData.tone = 'black'; M.matte.userData.tone = 'matte'; // retuned per theme in engine.js
   Object.values(M).forEach(keep);
   const coat = (hex, op) => new THREE.MeshStandardMaterial({ color: hex, metalness: 0.2, roughness: 0.05, transparent: true, opacity: op, envMapIntensity: 3, depthWrite: false });
 

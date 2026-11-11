@@ -197,7 +197,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
   }
 
   // 6 · post-processing (desktop only) ─────────────────────────────────────
-  let composer = null, dof = null, dofPass = null, bloom = null, chroma = null, fxaaPass = null;
+  let composer = null, dof = null, dofPass = null, bloom = null, chroma = null, fxaaPass = null, vignette = null;
   if (!lite) {
     composer = new EffectComposer(renderer, { multisampling: 0, frameBufferType: THREE.HalfFloatType }); // MSAA 4x on a half-float target costs ~150 MB at retina size
     composer.addPass(new RenderPass(scene, camera));
@@ -206,7 +206,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     chroma = new ChromaticAberrationEffect({ offset: new THREE.Vector2(0.0006, 0.0006), radialModulation: true, modulationOffset: 0.3 });
     const grain = new NoiseEffect({ blendFunction: BlendFunction.OVERLAY, premultiply: true });
     grain.blendMode.opacity.value = 0.22;
-    const vignette = new VignetteEffect({ offset: 0.32, darkness: 0.55 });
+    vignette = new VignetteEffect({ offset: 0.32, darkness: 0.55 });
     const tone = new ToneMappingEffect({ mode: ToneMappingMode.NEUTRAL });
     dofPass = new EffectPass(camera, dof);
     composer.addPass(dofPass);
@@ -243,6 +243,33 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
   const exB = at('explode', 1);
   const reA = at('pullback', 0.2);
   const reB = at('pullback', 0.8);
+
+  // ── theme look: the dark theme is moody and high-contrast; the light theme needs softer, brighter
+  //    lighting, glass that reads as tinted glass (not black holes) and a lighter vignette ──
+  const LOOKS = {
+    dark: { fog: 1, env: 0.9, key: 2.2, rim: 1.4, vignette: 0.55, bloomThreshold: 0.78, glassEmissive: [0x0a1a33, 0.6], glassEnv: 3.2, black: 0x0d0d0e, matte: 0x141416 },
+    light: { fog: 0.4, env: 1.3, key: 1.7, rim: 0.9, vignette: 0.2, bloomThreshold: 0.92, glassEmissive: [0x4a6fa3, 1.0], glassEnv: 2.6, black: 0x2a2a31, matte: 0x34343b },
+  };
+  const look = { ...LOOKS.dark };
+  function applyTheme(t) {
+    Object.assign(look, LOOKS[t === 'light' ? 'light' : 'dark']);
+    scene.environmentIntensity = look.env;
+    rim.intensity = look.rim;
+    if (vignette) vignette.darkness = look.vignette;
+    if (bloom) bloom.luminanceMaterial.threshold = look.bloomThreshold;
+    for (const part of parts.values()) {
+      for (const m of part.mats) {
+        const tone = m.userData.tone;
+        if (tone === 'glass') {
+          m.emissive.setHex(look.glassEmissive[0]);
+          m.emissiveIntensity = look.glassEmissive[1];
+          m.userData.baseEmissive?.setHex(look.glassEmissive[0]);
+          m.envMapIntensity = look.glassEnv;
+        } else if (tone === 'black') m.color.setHex(look.black);
+        else if (tone === 'matte') m.color.setHex(look.matte);
+      }
+    }
+  }
 
   // ── state ────────────────────────────────────────────────────────────────
   const state = { progress: 0, shown: 0, prevShown: 0, era: 0, px: 0, py: 0, sx: 0, sy: 0, flash: 0, theme, running: false, last: 0, slow: 0, frames: 0, fullFrames: 0, effDpr: dpr, covered: false, highlight: null, hlG: 0, anno: 0,
@@ -431,7 +458,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     camera.updateProjectionMatrix();
 
     cursorLight.position.set(state.sx * 4, -state.sy * 2.5 + 0.5, 3.2).add(model.position);
-    key.intensity = 2.2 + state.flash * 3;
+    key.intensity = look.key + state.flash * 3;
 
     const pair = state.theme === 'light' ? 'light' : 'dark';
     colA.set(k.a.bg[pair][0]).lerp(tmpA.set(k.b.bg[pair][0]), k.t);
@@ -440,7 +467,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     bgMat.uniforms.colB.value.copy(colB);
     bgMat.uniforms.split.value = k.split;
     scene.fog.color.copy(colA).lerp(colB, 0.5);
-    scene.fog.density = k.fog;
+    scene.fog.density = k.fog * look.fog; // pale backgrounds wash far objects out: less fog in light mode
 
     floaters.update(time, k.floaters, state.era, state.flash);
     updateDust(p);
@@ -548,6 +575,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
       renderer.compile(scene, camera);
     }
   }
+  applyTheme(theme);
   state.lastActive = performance.now(); // start in the active state so the first frames are full rate
   frame(performance.now());
   await tick(1);
@@ -569,7 +597,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     },
     setEra: (e) => { state.era = e; },
     setPointer: (x, y) => { if (!reduced) { if (Math.abs(x - state.px) + Math.abs(y - state.py) > 0.004) state.lastActive = performance.now(); state.px = x; state.py = y; } },
-    setTheme: (t) => { state.theme = t; },
+    setTheme: (t) => { state.theme = t; applyTheme(t); },
     setCovered: (c) => { state.covered = c; },
     setHighlight: (name) => { state.highlight = name; state.lastActive = performance.now(); },
     setProfile: (on) => { state.profile = on; if (!on) renderer.info.autoReset = true; },
