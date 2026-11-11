@@ -60,8 +60,8 @@ export default function Videos({ videos, n = 3, total = 5 }) {
   return (
     <section id="video" className="pf-section" aria-labelledby="video-title">
       <div className="pf-wrap">
-        <SectionHead n={n} total={total} title="Video Edits" kicker="MOTION" />
-        <span id="video-title" className="pf-sr">Video Edits</span>
+        <SectionHead n={n} total={total} title="Films" kicker="MOTION" />
+        <span id="video-title" className="pf-sr">Films</span>
         <ul className="pf-videos">
           {videos.map((v, i) => <Card key={v.id} v={v} i={i} onOpen={setActive} />)}
         </ul>

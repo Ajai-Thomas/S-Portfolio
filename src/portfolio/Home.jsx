@@ -1,7 +1,7 @@
 // Single-page portfolio mounted at "/".
 // One fixed WebGL canvas (src/scene) is the background; this is the HTML laid over it.
 // The gallery section renders the existing GalleryPage untouched.
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import content from './content.json';
 import './portfolio.css';
 import { SECTIONS, reducedMotion, resolveAlbum, useReveal, useWithin } from './util';
@@ -46,7 +46,6 @@ export default function Home({ galleryImages }) {
   const hasSelected = sanity.selected.length > 0;
   const lead = hasSelected ? 1 : 0;
   const total = 5 + lead;
-  const navSections = useMemo(() => SECTIONS.filter((s) => s.id !== 'selected' || hasSelected), [hasSelected]);
   const is3d = mode !== 'static';
 
   useReveal(root);
@@ -75,7 +74,7 @@ export default function Home({ galleryImages }) {
       <a className="pf-skip" href="#about">Skip to content</a>
       {mode !== 'static' && <ApertureLoader progress={progress} done={mode === 'ready'} />}
       <Cursor />
-      <Nav initials={content.site.initials} theme={theme} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} sections={navSections} />
+      <Nav initials={content.site.initials} theme={theme} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} sections={SECTIONS} />
       {is3d && (
         <Suspense fallback={null}>
           <Scene

@@ -3,14 +3,14 @@ import { useEffect, useState } from 'react';
 
 export const SECTIONS = [
   { id: 'about', label: 'About' },
-  { id: 'pullback', label: 'Works' },
-  { id: 'selected', label: 'Selected' },
+  { id: 'pullback', label: 'Work' },
   { id: 'gallery', label: 'Gallery' },
-  { id: 'albums', label: 'Albums' },
-  { id: 'video', label: 'Video' },
-  { id: 'blog', label: 'Diary' },
+  { id: 'video', label: 'Films' },
   { id: 'contact', label: 'Contact' },
 ];
+
+// Sections that are not in the nav light up the nav item they belong to.
+export const NAV_ALIAS = { selected: 'pullback', albums: 'pullback', blog: 'pullback' };
 
 export const reducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;

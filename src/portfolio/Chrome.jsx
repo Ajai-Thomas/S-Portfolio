@@ -1,14 +1,14 @@
 // Page chrome: nav, cursor, loader, film strip, section heading, modal.
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { SECTIONS, finePointer, reducedMotion } from './util';
+import { NAV_ALIAS, SECTIONS, finePointer, reducedMotion } from './util';
 
 export function Nav({ initials, theme, onToggleTheme, sections = SECTIONS }) {
   const [active, setActive] = useState('');
   useEffect(() => {
-    const els = ['intro', ...sections.map((s) => s.id)].map((id) => document.getElementById(id)).filter(Boolean);
+    const els = ['intro', ...sections.map((s) => s.id), ...Object.keys(NAV_ALIAS)].map((id) => document.getElementById(id)).filter(Boolean);
     const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && setActive(e.target.id)),
+      (entries) => entries.forEach((e) => e.isIntersecting && setActive(NAV_ALIAS[e.target.id] || e.target.id)),
       { rootMargin: '-45% 0px -50% 0px' }
     );
     els.forEach((el) => io.observe(el));
