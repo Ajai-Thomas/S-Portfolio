@@ -248,7 +248,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
   //    lighting, glass that reads as tinted glass (not black holes) and a lighter vignette ──
   const LOOKS = {
     dark: { fog: 1, env: 0.9, key: 2.2, rim: 1.4, vignette: 0.55, bloomThreshold: 0.78, glassEmissive: [0x0a1a33, 0.6], glassEnv: 3.2, black: 0x0d0d0e, matte: 0x141416 },
-    light: { fog: 0.4, env: 1.3, key: 1.7, rim: 0.9, vignette: 0.2, bloomThreshold: 0.92, glassEmissive: [0x4a6fa3, 1.0], glassEnv: 2.6, black: 0x2a2a31, matte: 0x34343b },
+    light: { fog: 0.4, env: 1.3, key: 1.7, rim: 0.9, vignette: 0.2, bloomThreshold: 0.92, glassEmissive: [0x6a5f55, 0.55], glassEnv: 2.4, black: 0x2a2a31, matte: 0x34343b },
   };
   const look = { ...LOOKS.dark };
   function applyTheme(t) {
