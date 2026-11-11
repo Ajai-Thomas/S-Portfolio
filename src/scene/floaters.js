@@ -36,13 +36,14 @@ const frameTex = () => canvasTex((g, w, h) => {
   g.fillStyle = '#e9c98a';
   for (let x = 12; x < w; x += 34) { g.fillRect(x, 8, 16, 12); g.fillRect(x, h - 20, 16, 12); }
   g.fillStyle = '#3b4658'; g.fillRect(14, 30, w - 28, h - 60);
-  g.fillStyle = 'rgba(255,255,255,.55)'; g.font = '14px monospace'; g.fillText('PLACEHOLDER 12A', 22, h - 34);
+  g.fillStyle = 'rgba(255,255,255,.55)'; g.font = '14px monospace'; g.fillText('12A', 22, h - 34);
 });
 
 // photos: optional array of image URLs shown on the polaroids (otherwise placeholders).
 export function buildFloaters({ count, photos = [], loader }) {
   const group = new THREE.Group();
   const items = [];
+  const faces = []; // polaroid photo materials, so real photos can be swapped in later
   const disposables = [];
   const keep = (o) => { disposables.push(o); return o; };
 
@@ -82,7 +83,7 @@ export function buildFloaters({ count, photos = [], loader }) {
       const body = new THREE.Mesh(geos.card, makeFade(white));
       const map = photoTex.length ? photoTex[i % photoTex.length] : keep(photoFace((i * 37) % 360));
       const fm = new THREE.MeshStandardMaterial({ map, roughness: 0.6 });
-      fm.transparent = true; fadeMats.push(fm); disposables.push(fm);
+      fm.transparent = true; fadeMats.push(fm); disposables.push(fm); faces.push(fm);
       const face = new THREE.Mesh(geos.face, fm);
       face.position.set(0, 0.1, 0.017);
       mesh.add(body, face);
@@ -141,9 +142,37 @@ export function buildFloaters({ count, photos = [], loader }) {
     });
   }
 
+  // Put real photos on the polaroids (already shuffled by the caller). Each polaroid gets a
+  // different photo while there are enough; textures are cropped to fill the square.
+  const cache = new Map();
+  function setPhotos(urls) {
+    if (!urls || !urls.length || !faces.length) return;
+    const wanted = new Map(); // url -> faces that show it
+    faces.forEach((fm, i) => {
+      const u = urls[i % urls.length];
+      if (!wanted.has(u)) wanted.set(u, []);
+      wanted.get(u).push(fm);
+    });
+    wanted.forEach((mats, url) => {
+      const apply = (tex) => mats.forEach((m) => { m.map = tex; m.needsUpdate = true; });
+      if (cache.has(url)) { apply(cache.get(url)); return; }
+      loader.load(url, (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = 4;
+        const a = tex.image.width / tex.image.height; // "cover": crop to the square face
+        tex.repeat.set(a > 1 ? 1 / a : 1, a > 1 ? 1 : a);
+        tex.offset.set(a > 1 ? (1 - 1 / a) / 2 : 0, a > 1 ? 0 : (1 - a) / 2);
+        keep(tex);
+        cache.set(url, tex);
+        apply(tex);
+      });
+    });
+  }
+
   return {
     group,
     update,
+    setPhotos,
     dispose() { disposables.forEach((d) => d.dispose?.()); },
   };
 }

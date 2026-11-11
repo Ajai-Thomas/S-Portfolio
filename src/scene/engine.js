@@ -555,6 +555,7 @@ export async function createScene({ canvas, lite = false, reduced = false, theme
     internals: { scene, composer, renderer, camera, dust, flare, bgMat, model, parts },
     debugInfo: () => ({ cam: camera.position.toArray(), fov: camera.fov, aspect: camera.aspect, colA: colA.getHexString(), colB: colB.getHexString(), split: bgMat.uniforms.split.value, visible: [...parts.values()].filter((q) => q.group.visible).length, res: bgMat.uniforms.res.value.toArray(), nan: Number.isNaN(camera.position.x) }),
     partNames: PARTS.map((d) => d.name),
+    setPhotos: (urls) => floaters.setPhotos(urls),
     setProgress: (p) => {
       const d = Math.abs(p - state.progress);
       if (d > 1e-5) state.lastActive = performance.now();

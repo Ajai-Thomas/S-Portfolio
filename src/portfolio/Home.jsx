@@ -39,6 +39,8 @@ export default function Home({ galleryImages }) {
   const [progress, setProgress] = useState(0);
   const nearGallery = useWithin(galleryBox); // mounted only while near the viewport
   const sanity = useSanityPortfolio();
+  // Your uploaded photos, shuffled, go on the floating polaroids (content.json can override the list).
+  const [floaterPhotos, setFloaterPhotos] = useState(content.about.floaterPhotos || []);
   // Albums/videos come from Sanity; content.json is the placeholder fallback.
   const albums = (sanity.albums.length ? sanity.albums : sanity.loaded ? content.albums : []).map(resolveAlbum);
   const videos = sanity.videos.length ? sanity.videos : content.videos;
@@ -47,6 +49,16 @@ export default function Home({ galleryImages }) {
   const lead = hasSelected ? 1 : 0;
   const total = 5 + lead;
   const is3d = mode !== 'static';
+
+  useEffect(() => {
+    if (content.about.floaterPhotos?.length || !sanity.loaded) return;
+    const urls = [...new Set([...sanity.albums.flatMap((a) => a.photos), ...sanity.selected.map((s) => s.photo)]
+      .map((p) => p?.src)
+      .filter((u) => u && u.includes('cdn.sanity.io')) // only hosts that allow WebGL textures
+      .map((u) => u.replace('w=900', 'w=480')))];
+    for (let i = urls.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [urls[i], urls[j]] = [urls[j], urls[i]]; }
+    setFloaterPhotos(urls.slice(0, 16));
+  }, [sanity.loaded, sanity.albums, sanity.selected]);
 
   useReveal(root);
   // arriving from a legacy URL like /blog: jump to that section once the page is up
@@ -79,7 +91,7 @@ export default function Home({ galleryImages }) {
         <Suspense fallback={null}>
           <Scene
             theme={theme}
-            photos={content.about.floaterPhotos}
+            photos={floaterPhotos}
             engineRef={engineRef}
             onProgress={setProgress}
             onReady={() => setMode('ready')}

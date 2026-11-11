@@ -23,6 +23,8 @@ export default function Scene({ theme, photos, engineRef, onProgress, onReady, o
   const canvas = useRef(null);
   const themeRef = useRef(theme);
   themeRef.current = theme;
+  const photosRef = useRef(photos);
+  photosRef.current = photos;
 
   useEffect(() => {
     if (!hasWebGL()) { onFallback(); return; }
@@ -36,10 +38,11 @@ export default function Scene({ theme, photos, engineRef, onProgress, onReady, o
       try {
         const { createScene } = await import('./engine');
         const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const e = await createScene({ canvas: canvas.current, lite, reduced, theme: themeRef.current, photos, onProgress, onShutter, onLost: onFallback });
+        const e = await createScene({ canvas: canvas.current, lite, reduced, theme: themeRef.current, onProgress, onShutter, onLost: onFallback });
         if (cancelled) { e.dispose(); return; }
         engine = e;
         engineRef.current = e;
+        e.setPhotos(photosRef.current); // real photos on the floating polaroids
         if (new URLSearchParams(window.location.search).get('debug') === '1') window.__pfEngine = e;
         e.start();
         onReady(e);
@@ -73,6 +76,8 @@ export default function Scene({ theme, photos, engineRef, onProgress, onReady, o
   }, []);
 
   useEffect(() => { engineRef.current?.setTheme(theme); }, [theme, engineRef]);
+  // photos arrive from Sanity after the scene is already running
+  useEffect(() => { engineRef.current?.setPhotos(photos); }, [photos, engineRef]);
 
   return <canvas ref={canvas} className="pf-canvas" aria-hidden="true" />;
 }
